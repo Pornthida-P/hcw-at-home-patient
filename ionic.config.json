@@ -1,7 +1,7 @@
 {
-  "name": "hug_at_home",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "custom"
+    "name": "hcw-at-home-patient",
+    "integrations": {
+        "capacitor": {}
+    },
+    "type": "custom"
 }

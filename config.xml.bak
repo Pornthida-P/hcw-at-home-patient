@@ -11,14 +11,14 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    <access origin="https://dev-patient-hug-at-home.oniabsis.com" />
-    <access origin="https://preprod-app-hug-at-home.oniabsis.com" />
+    <access origin="https://dev-patient-hcw-at-home.oniabsis.com" />
+    <access origin="https://preprod-app-hcw-at-home.oniabsis.com" />
     <preference name="ScrollEnabled" value="false" />
     <preference name="android-targetSdkVersion" value="31" />
     <preference name="BackupWebStorage" value="none" />
     <universal-links>
-        <host name="dev-patient-hug-at-home.oniabsis.com" scheme="https" />
-        <host name="preprod-app-hug-at-home.oniabsis.com" scheme="https" />
+        <host name="dev-patient-hcw-at-home.oniabsis.com" scheme="https" />
+        <host name="preprod-app-hcw-at-home.oniabsis.com" scheme="https" />
     </universal-links>
     <platform name="android">
         <preference name="AndroidXEnabled" value="true" />
@@ -136,12 +136,12 @@
     <plugin name="cordova-plugin-splashscreen" spec="6.0.0" />
     <plugin name="cordova-plugin-local-notification" spec="0.9.0-beta.2" />
     <plugin name="ionic-plugin-deeplinks" spec="^1.0.20">
-        <variable name="URL_SCHEME" value="hugathome" />
+        <variable name="URL_SCHEME" value="hcwathome-patient" />
         <variable name="DEEPLINK_SCHEME" value="https" />
-        <variable name="DEEPLINK_HOST" value="preprod-app-hug-at-home.oniabsis.com" />
+        <variable name="DEEPLINK_HOST" value="preprod-app-hcw-at-home.oniabsis.com" />
         <variable name="ANDROID_PATH_PREFIX" value="/" />
         <variable name="ANDROID_2_PATH_PREFIX" value="/" />
         <variable name="DEEPLINK_2_SCHEME" value="https" />
-        <variable name="DEEPLINK_2_HOST" value="dev-patient-hug-at-home.oniabsis.com" />
+        <variable name="DEEPLINK_2_HOST" value="dev-patient-hcw-at-home.oniabsis.com" />
     </plugin>
 </widget>

@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.iabsis.hcwathome',
-  appName: 'hug_at_home',
+  appName: 'hcw-at-home-patient',
   webDir: 'www',
   bundledWebRuntime: false,
   plugins: {

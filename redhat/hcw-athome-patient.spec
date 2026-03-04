@@ -35,4 +35,4 @@ make build
 
 %changelog
 * Wed Apr 17 2019 Olivier Bitsch <olivier.b@iabsis.com>
-- Initial spec file for hug-home-web package.
+- Initial spec file for hcw-at-home-patient package.

@@ -50,7 +50,7 @@ install: web
 	@ cp -a www/* /usr/local/share/hcw/patient
 
 sign:
-	cd android && jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ~/Documents/Clients/HUG/HUG@Home/android-release-key-playstore.jks app/build/outputs/bundle/release/app-release.aab alias-hug-at-home
+	cd android && jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ~/Documents/Clients/HUG/HUG@Home/android-release-key-playstore.jks app/build/outputs/bundle/release/app-release.aab alias-hcw-at-home-patient
 	cd android && apksigner sign --ks ~/Documents/Clients/HUG/HUG@Home/android-release-key-playstore.jks app/build/outputs/apk/release/app-release-unsigned.apk
 
 update-redhat-release:

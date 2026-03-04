@@ -3,59 +3,54 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Platform } from '@ionic/angular';
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
-
 export class GlobalVariableService {
-  private hostBehaviorSubject: BehaviorSubject<string>;
+    private hostBehaviorSubject: BehaviorSubject<string>;
 
-  public host: Observable<string>;
-  public serverError = false;
-  constructor(public platform: Platform) {
-    if(!this.platform.is('mobileweb') && ( this.platform.is('ios') || this.platform.is('android'))){
-      this.resetHost()
-    }
-    let host = this.getHost();
-    if (this.hostBehaviorSubject && this.hostBehaviorSubject.getValue() != host) {
-      this.hostBehaviorSubject.next(host)
-    }
-    else {
-      this.hostBehaviorSubject = new BehaviorSubject<string>(host);
-    }
-
-    this.host = this.hostBehaviorSubject.asObservable()
-  }
-
-  public resetHost(){
-    localStorage.removeItem("host");
-  }
-  public getHost() {
-
-    let host = localStorage.getItem("host");
-
-    if ( this.platform.is('ios') || this.platform.is('android')) {
-
-        if (!host) {
-          host = environment.host;
+    public host: Observable<string>;
+    public serverError = false;
+    constructor(public platform: Platform) {
+        if (!this.platform.is('mobileweb') && (this.platform.is('ios') || this.platform.is('android'))) {
+            this.resetHost();
+        }
+        let host = this.getHost();
+        if (this.hostBehaviorSubject && this.hostBehaviorSubject.getValue() != host) {
+            this.hostBehaviorSubject.next(host);
+        } else {
+            this.hostBehaviorSubject = new BehaviorSubject<string>(host);
         }
 
-        localStorage.setItem('host', host);
-    
-      } else {
-        host = environment.host
-      }
+        this.host = this.hostBehaviorSubject.asObservable();
+    }
 
-      return host;
-  }
+    public resetHost() {
+        localStorage.removeItem('host');
+    }
+    public getHost() {
+        let host = localStorage.getItem('host');
 
-  public getHostValue() {
-    return this.hostBehaviorSubject.getValue();
-  }
+        if (this.platform.is('ios') || this.platform.is('android')) {
+            if (!host) {
+                host = environment.host;
+            }
 
-  public getApiPath() {
-    //prevent double slash -> https://app.hug-at-home.ch//api/v1 ->  https://app.hug-at-home.ch/api/v1
-    let apiUrl = (this.hostBehaviorSubject.getValue() + environment.api).replace(/([^:]\/)\/+/g, "$1")
-    apiUrl = apiUrl.replace(/(\:)\:/, "$1")
-    return apiUrl ;
-  }
+            localStorage.setItem('host', host);
+        } else {
+            host = environment.host;
+        }
+
+        return host;
+    }
+
+    public getHostValue() {
+        return this.hostBehaviorSubject.getValue();
+    }
+
+    public getApiPath() {
+        //prevent double slash -> https://app.hcw-at-home.ch//api/v1 ->  https://app.hcw-at-home.ch/api/v1
+        let apiUrl = (this.hostBehaviorSubject.getValue() + environment.api).replace(/([^:]\/)\/+/g, '$1');
+        apiUrl = apiUrl.replace(/(\:)\:/, '$1');
+        return apiUrl;
+    }
 }

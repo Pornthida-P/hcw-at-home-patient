@@ -1,52 +1,48 @@
 <ion-content>
-    <div class='center'>
-        <div *ngIf="configService.config" class="custom-card">
+    <div class="center">
+        <div
+            *ngIf="configService.config"
+            class="custom-card">
             <div class="left-side">
                 <div class="container">
-                    <p *ngIf="!markdownExists">
-                        {{ 'login.homeIsAHUGTeleconsultation' | translate:configService.config }}
-                    </p>
+                    <p *ngIf="!markdownExists">{{ 'login.homeIsAHUGTeleconsultation' | translate:configService.config }}</p>
 
                     <div *ngIf="markdownExists">
-                        <markdown [src]="markdownUrl">
-                        </markdown>
+                        <markdown [src]="markdownUrl"> </markdown>
                     </div>
                 </div>
-
             </div>
             <div class="right-side">
-
-                <div class="container" *ngIf="showTranslatorConfirmation">
+                <div
+                    class="container"
+                    *ngIf="showTranslatorConfirmation">
                     <div class="title">
-                        <p *ngIf="!translationRequestRefused">
-                            {{ 'login.translationRequestAccepted' | translate }}
-                        </p>
-                        <p *ngIf="translationRequestRefused">
-                            {{ 'login.translationRequestRefused' | translate }}
-                        </p>
+                        <p *ngIf="!translationRequestRefused">{{ 'login.translationRequestAccepted' | translate }}</p>
+                        <p *ngIf="translationRequestRefused">{{ 'login.translationRequestRefused' | translate }}</p>
                     </div>
                 </div>
 
-
-                <div *ngIf="!showTranslatorConfirmation" class="container">
+                <div
+                    *ngIf="!showTranslatorConfirmation"
+                    class="container">
                     <div class="title">
-                        <img class="logo"
-                             *ngIf="configService.config.logo"
-                             [src]="configService.config.logo"
-                             [alt]="configService.config.branding"
-                             onerror="this.style.opacity='0'"
-                        />
+                        <img
+                            class="logo"
+                            *ngIf="configService.config.logo"
+                            [src]="configService.config.logo"
+                            [alt]="configService.config.branding"
+                            onerror="this.style.opacity = '0'" />
                     </div>
 
-
                     <app-translator-form
-                            *ngIf="invite && invite.type === 'TRANSLATOR_REQUEST'  && !this.noInviteError"
-                            (onTranslatorSubmit)="translatorSubmit($event)"
-                            (onTranslatorRefused)="translatorRefused($event)"
-                            [invite]="invite"
-                    ></app-translator-form>
+                        *ngIf="invite && invite.type === 'TRANSLATOR_REQUEST'  && !this.noInviteError"
+                        (onTranslatorSubmit)="translatorSubmit($event)"
+                        (onTranslatorRefused)="translatorRefused($event)"
+                        [invite]="invite"></app-translator-form>
 
-                    <div *ngIf="translatorAcceptError" class="validator-error">
+                    <div
+                        *ngIf="translatorAcceptError"
+                        class="validator-error">
                         {{ translatorAcceptError.userMessage }}
                     </div>
 
@@ -57,138 +53,134 @@
                                     <ion-card-title>{{ 'login.warning' | translate }}</ion-card-title>
                                 </ion-card-header>
 
-                                <ion-card-content>
-                                    {{ 'login.thisApplicationIsIntented' | translate }}
-                                </ion-card-content>
+                                <ion-card-content> {{ 'login.thisApplicationIsIntented' | translate }} </ion-card-content>
                             </ion-card>
 
-<!--                            <button-->
-<!--                                    class="btn red big"-->
-<!--                                    (click)="closeApp()"-->
-<!--                                    type="button"-->
-<!--                                    *ngIf="isNativeApp()"-->
-<!--                            >-->
-<!--                                {{ 'login.closeTheApplication' | translate }}-->
-<!--                            </button>-->
+                            <!--                            <button-->
+                            <!--                                    class="btn red big"-->
+                            <!--                                    (click)="closeApp()"-->
+                            <!--                                    type="button"-->
+                            <!--                                    *ngIf="isNativeApp()"-->
+                            <!--                            >-->
+                            <!--                                {{ 'login.closeTheApplication' | translate }}-->
+                            <!--                            </button>-->
                         </ng-container>
-                        <ng-container *ngIf="!noTokenProvided" class="token-error">
+                        <ng-container
+                            *ngIf="!noTokenProvided"
+                            class="token-error">
                             <ion-card>
                                 <ion-card-header>
-                                    <ion-card-title class="token-error-title"
-                                    >{{ 'login.anErrorHasOccurred' | translate }}
-                                    </ion-card-title
-                                    >
+                                    <ion-card-title class="token-error-title">{{ 'login.anErrorHasOccurred' | translate }} </ion-card-title>
                                 </ion-card-header>
                                 <ion-card-content class="token-error-content">
                                     {{ 'login.theInvitationIsNotOrNoLongerValide' | translate }}
                                 </ion-card-content>
                             </ion-card>
 
-                            <button class="btn big" (click)="clearError()" type="button">
+                            <button
+                                class="btn big"
+                                (click)="clearError()"
+                                type="button">
                                 {{ 'login.back' | translate }}
                             </button>
 
-                            <button class="btn red big" (click)="closeApp()" type="button" *ngIf="isNativeApp() && !platform.is('ios')">
+                            <button
+                                class="btn red big"
+                                (click)="closeApp()"
+                                type="button"
+                                *ngIf="isNativeApp() && !platform.is('ios')">
                                 {{ 'login.closeTheApplication' | translate }}
                             </button>
                         </ng-container>
                     </ng-container>
 
-                    <ng-container
-                            *ngIf="!noInviteError && !(invite && invite.type === 'TRANSLATOR_REQUEST')"></ng-container>
+                    <ng-container *ngIf="!noInviteError && !(invite && invite.type === 'TRANSLATOR_REQUEST')"></ng-container>
                     <ng-container *ngIf="!noInviteError">
-                        <p *ngIf="invite && !isProduction()">
-                            {{ 'login.ifYouReceivedThisInvitation' | translate }}
-                        </p>
-
+                        <p *ngIf="invite && !isProduction()">{{ 'login.ifYouReceivedThisInvitation' | translate }}</p>
 
                         <ion-card *ngIf="!inviteToken">
                             <ion-card-header>
                                 <ion-card-title>{{ 'login.warning' | translate }}</ion-card-title>
                             </ion-card-header>
 
-                            <ion-card-content>
-                                {{ 'login.thisAppOnlyWorksByInivitation' | translate }}
-                            </ion-card-content>
+                            <ion-card-content> {{ 'login.thisAppOnlyWorksByInivitation' | translate }} </ion-card-content>
                         </ion-card>
 
                         <form
-                                *ngIf="invite"
-                                (submit)="onSubmit()"
-                                class="login-form"
-                        >
-                            <p *ngIf="isExpert" class="text-center">
+                            *ngIf="invite"
+                            (submit)="onSubmit()"
+                            class="login-form">
+                            <p
+                                *ngIf="isExpert"
+                                class="text-center">
                                 {{ 'login.expertLoginTitle' | translate }}
                             </p>
 
-
-                            <ion-item class="mb-1" *ngIf="isExpert">
+                            <ion-item
+                                class="mb-1"
+                                *ngIf="isExpert">
                                 <ion-input
-                                        labelPlacement="floating"
-                                        label="{{'login.firstName'|translate}}"
-                                        [(ngModel)]="firstName"
-                                        name="firstName"
-                                        type="string"
-                                        placeholder="{{'login.firstName'|translate}}"
-                                ></ion-input>
+                                    labelPlacement="floating"
+                                    label="{{'login.firstName'|translate}}"
+                                    [(ngModel)]="firstName"
+                                    name="firstName"
+                                    type="string"
+                                    placeholder="{{'login.firstName'|translate}}"></ion-input>
                             </ion-item>
                             <ion-item *ngIf="isExpert">
                                 <ion-input
-                                        labelPlacement="floating"
-                                        label="{{ 'login.lastName' | translate }}"
-                                        [(ngModel)]="lastName"
-                                        name="lastName"
-                                        type="string"
-                                        placeholder=" {{ 'login.lastName' | translate }}"
-                                ></ion-input>
+                                    labelPlacement="floating"
+                                    label="{{ 'login.lastName' | translate }}"
+                                    [(ngModel)]="lastName"
+                                    name="lastName"
+                                    type="string"
+                                    placeholder=" {{ 'login.lastName' | translate }}"></ion-input>
                             </ion-item>
 
                             <div class="checkbox-wrapper">
                                 <label class="custom-checkbox-label">
                                     <ion-checkbox [(ngModel)]="termsChecked"></ion-checkbox>
-                                    <span class="checkbox-text" (click)="toggleCheckbox()">
+                                    <span
+                                        class="checkbox-text"
+                                        (click)="toggleCheckbox()">
                                         <span> {{ 'login.termsText' | translate:configService.config }} </span>
-                                        <span class="terms"
-                                              (click)="goToTerms($event)">{{ 'register.terms' | translate }}</span>
+                                        <span
+                                            class="terms"
+                                            (click)="goToTerms($event)"
+                                            >{{ 'register.terms' | translate }}</span
+                                        >
                                         <span> {{ 'login.termsSecondText' | translate:configService.config }} </span>
                                     </span>
                                 </label>
                             </div>
 
                             <div class="buttons">
-                                <button class="btn green big"
-                                        [disabled]="(isExpert && (!firstName || !lastName || !termsChecked)) || !termsChecked"
-                                        type="submit"
-                                        [class.submitted]="submitted"
-                                >
-                                    <ng-container *ngIf="!submitted"
-                                    >{{ 'login.joinTheConsultation' | translate }}
-                                    </ng-container
-                                    >
+                                <button
+                                    class="btn green big"
+                                    [disabled]="(isExpert && (!firstName || !lastName || !termsChecked)) || !termsChecked"
+                                    type="submit"
+                                    [class.submitted]="submitted">
+                                    <ng-container *ngIf="!submitted">{{ 'login.joinTheConsultation' | translate }} </ng-container>
                                     <img
-                                            src="/assets/images/three-dots-spinner.svg"
-                                            alt="Chargement en cours"
-                                    />
+                                        src="/assets/images/three-dots-spinner.svg"
+                                        alt="Chargement en cours" />
                                 </button>
                             </div>
-                            <p *ngIf="submitted">
-                                {{ 'login.pleaseWaitWhileYourRequest' | translate }}
-                            </p>
+                            <p *ngIf="submitted">{{ 'login.pleaseWaitWhileYourRequest' | translate }}</p>
                         </form>
                     </ng-container>
 
                     <ng-container *ngIf="isScheduled">
                         <h2 class="title">
-                            {{ 'login.yourConsultationIsPlannedFor' | translate }}
-                            {{ (scheduledFor) | date: "medium":null: invite.patientLanguage }}.
+                            {{ 'login.yourConsultationIsPlannedFor' | translate }} {{ (scheduledFor) | date: "medium":null:
+                            invite.patientLanguage }}.
                         </h2>
                         <p class="ics">
                             <a
-                                    [href]="icsBlob"
-                                    class="btn green"
-                                    type="text/calendar"
-                                    download="event.ics"
-                            >
+                                [href]="icsBlob"
+                                class="btn green"
+                                type="text/calendar"
+                                download="event.ics">
                                 {{ 'login.addTheEventToYourCalendar' | translate }}
                             </a>
                         </p>
@@ -197,7 +189,6 @@
                     <app-select-language (selectedLanguageChange)="onLanguageChange($event)"></app-select-language>
                 </div>
             </div>
-
         </div>
     </div>
 </ion-content>
