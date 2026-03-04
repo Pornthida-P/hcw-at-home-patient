@@ -28,6 +28,8 @@ npm start
 npm run ionic:serve
 ```
 
+Then open **http://localhost:4201/**.
+
 ## How to deploy
 
 See the deployment guide:
