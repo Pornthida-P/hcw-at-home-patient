@@ -1,0 +1,223 @@
+.login-full-width {
+  width: 100%;
+  height: 50px;
+  padding: 0;
+}
+
+.custom-card {
+  width: 80%;
+  display: flex;
+  height: 80%;
+  @media (max-width: 598px) {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+.center {
+  @media (max-width: 598px) {
+    height: unset
+  }
+}
+
+.login-full-width input {
+  height: 100%;
+}
+
+.terms-btn {
+  font-size: 0.8em;
+}
+
+.at {
+  margin: 16px;
+  font-size: 37px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.at > span {
+  display: block;
+  font-size: 12px;
+}
+
+.wrap {
+  width: 100%;
+  min-height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 20px;
+}
+
+p {
+  font-weight: 500;
+  //color: #fff;
+}
+
+
+.container {
+  padding: 24px;
+}
+
+.left-side {
+  width: 50%;
+  background: var(--ion-color-primary);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  @media (max-width: 598px) {
+    width: 100%;
+  }
+}
+
+.right-side {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @media (max-width: 598px) {
+    width: 100%;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+.icons {
+  text-align: center;
+
+  img {
+    max-height: 60px;
+  }
+}
+
+.ics {
+  text-align: center;
+
+  a {
+    display: inline-block;
+  }
+}
+
+ion-card {
+  margin: 40px auto;
+}
+
+.title {
+  text-align: center;
+  margin: 80px auto 40px;
+}
+
+@media screen and (max-width: 800px) {
+  .container {
+    width: 92%;
+  }
+  .title {
+    margin: 40px auto 40px;
+  }
+}
+
+.invite-error {
+  text-align: center;
+  font-size: 21px;
+  margin-top: 26px;
+  padding: 3px;
+}
+
+ion-content {
+  background: transparent;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 3rem;
+
+  .custom-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .checkbox-text {
+    margin-left: 8px;
+  }
+
+  ion-checkbox {
+    min-width: 18px;
+    @media (max-width: 598px) {
+      height: 30px !important;
+      min-width: 30px !important;
+    }
+  }
+
+  .terms {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+
+  div {
+    display: flex;
+    align-content: center;
+    align-items: center;
+  }
+}
+
+::ng-deep {
+  html[data-theme="accessibility"] {
+    p {
+      text-align: left;
+    }
+
+    .container {
+      margin-left: 20px !important;
+      padding-right: 15px;
+    }
+
+    .footer {
+      text-align: left;
+      display: flex;
+    }
+
+    #hhpMultiLang {
+      align-items: flex-start !important;
+    }
+
+    .token-error-title {
+      font-size: 1em;
+    }
+
+    .token-error-content {
+      font-size: 0.81em;
+    }
+
+    .title {
+      text-align: left;
+      margin-left: 0;
+    }
+
+    .btn {
+      margin: 20px 0 ;
+    }
+  }
+}
+markdown ::ng-deep {
+
+  a {
+    color: #FFFFFF;
+  }
+}

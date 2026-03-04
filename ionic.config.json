@@ -1,0 +1,7 @@
+{
+  "name": "hug_at_home",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

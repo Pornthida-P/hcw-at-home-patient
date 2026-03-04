@@ -1,0 +1,33 @@
+<ion-content padding>
+  <div class="wrap">
+    <div class="container">
+      <div
+        style="color: #ffffff; text-align: center;"
+      >
+        <ion-icon class="attach-icon" slot="icon-only" name="attach"></ion-icon>
+        <h4>
+          {{ 'chooseAttachement.send' | translate }} <br />
+          <strong>{{ 'chooseAttachement.aFile' | translate }}</strong>
+        </h4>
+      </div>
+      <button class="submit-btn" mat-button (click)="takePicture()">
+        {{ 'chooseAttachement.takeAPhoto' | translate }}
+      </button>
+      <button class="submit-btn" mat-button (click)="chooseFile()">
+        {{ 'chooseAttachement.fromThePhone' | translate }}
+      </button>
+      <!-- <button class="submit-btn" mat-button (click)="chooseFile()" >
+          Laisser un message audio
+         </button> -->
+      <ion-button (click)="dismiss()" class="dismiss-btn" color="transparent"
+        >{{ 'chooseAttachement.cancel' | translate }}</ion-button
+      >
+    </div>
+  </div>
+  <input
+    *ngIf="!isNativeApp()"
+    type="file"
+    style="display: none"
+    id="input-file"
+  />
+</ion-content>

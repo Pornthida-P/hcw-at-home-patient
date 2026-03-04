@@ -1,0 +1,81 @@
+@import "theme/variables.scss";
+
+::ng-deep {
+  html[data-theme="accessibility"] {
+    .wrap {
+      background-image: unset !important;
+    }
+  }
+}
+
+.container {
+  display: block;
+  margin: 30px auto;
+  width: 70%;
+}
+
+.custom-card {
+  width: 80%;
+  height: 80%;
+  overflow: auto;
+  @media (max-width: 598px) {
+    height: 100%;
+    width: 100%;
+  }
+}
+
+markdown ::ng-deep {
+  a {
+    color: var(--ion-color-primary);
+  }
+}
+
+.title {
+  text-align: center;
+  margin: 80px auto 40px;
+  font-size: 1.2em;
+}
+
+.back {
+  text-align: center;
+  display: block;
+}
+
+@media screen and (max-width: 800px) {
+  .container {
+    width: 92%;
+  }
+  .title {
+    margin: 40px auto 40px;
+  }
+  table {
+    td {
+      padding: 4px;
+    }
+  }
+}
+
+#hhpCountrySelect {
+  margin-top: 10px;
+  cursor: pointer;
+  left: calc(50% - 21px);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: baseline;
+
+  .sl-container {
+    display: flex;
+    align-items: center;
+    height: 42px;
+    position: relative;
+  }
+
+  .lang {
+    background-color: #FFFFFF;
+    outline: none;
+    border: 0;
+  }
+
+}

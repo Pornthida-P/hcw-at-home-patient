@@ -1,0 +1,128 @@
+<ion-content>
+    <div class='center'>
+        <div class="custom-card">
+            <div class="container">
+                <div id="dashboard-div">
+                    <div class="page-wrapper">
+                        <div class="messages-wrapper">
+                            <div  class="helper-wrapper" *ngIf="!accessHardwareGranted">
+                                <img src="assets/ask-browser-perms.svg" alt="">
+                            </div>
+                            <div class="msg-chain">
+
+                                <div class="messages mt-10" *ngIf="!accessHardwareGranted">
+                                    <span>{{ 'test.micAndCamRequesting'  | translate:configService.config}}</span>
+                                </div>
+
+                                <ng-container *ngIf="accessHardwareGranted">
+                                    <div class="helper-wrapper w-100"  *ngIf="permissionDenied || permissionError">
+                                        <img src="assets/browser-perms.svg" alt="">
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="accessHardwareGranted">
+                                    <div class="messages" *ngFor="let msg of msgChain"
+                                         [ngClass]="{error: !msg.success, success: msg.success}">
+                                        <ion-icon
+                                                *ngIf="msg.success"
+                                                name="checkmark-circle-outline"
+                                        ></ion-icon>
+                                        <ion-icon
+                                                *ngIf="!msg.success"
+                                                name="close-circle-outline"
+                                        ></ion-icon>
+                                        <span>{{ msg.msg }}</span>
+
+                                    </div>
+
+                                </ng-container>
+
+                                <div *ngIf="showRetryButton" class="mb-1">
+                                    <button class="btn" (click)="retryPermission()">{{ 'test.askForPermission' | translate }}</button>
+                                </div>
+                                <div class="messages" *ngIf="globalMessage">
+                                    <ion-icon name="checkmark-circle-outline" class="success"></ion-icon>
+                                    <span>{{ globalMessage }}</span>
+                                </div>
+                                <div class="messages" *ngIf="globalWarning">
+                                    <ion-icon name="checkmark-circle-outline" class="success"></ion-icon>
+                                    <span>{{ globalWarning }}</span>
+                                </div>
+
+
+                            </div>
+
+                            <button
+                                    class="btn green proceed-btn big"
+                                    type="button"
+                                    [disabled]="loading"
+                                    (click)="proceedToConsultation()"
+                                    *ngIf="inviteToken && showJoinButton">
+                                {{
+                                    loading
+                                        ? ("test.loading" | translate)
+                                        : ("test.joinTheConsultation" | translate)
+                                }}
+                            </button>
+                        </div>
+                        <div class="video-loop position-relative">
+                            <div *ngIf="showSpinner" class="loader"  [hidden]="accessHardwareGranted">
+                                <div class="loader-1 center"><span></span></div>
+                            </div>
+                            <div id="test-video-container" [hidden]="!testStarted">
+                                <div id="video-audio-container">
+                                    <div class="d-flex">
+                                            <div *ngIf="session" id="volume-container">
+                                                <div
+                                                        id="volume-slider"
+                                                        [style.height.%]="100 - volumeLevel"
+                                                ></div>
+                                            </div>
+                                            <div id="mirrored-video">
+                                                <app-peer-video
+                                                    *ngIf="myCamStream"
+                                                    [stream]="myCamStream"
+                                                ></app-peer-video>
+                                                <div *ngIf="showSpinner" class="loader">
+                                                    <div class="loader-1 center"><span></span></div>
+                                                </div>
+                                                <div *ngIf="session && !permissionDenied && !permissionError" id="tick-div">
+                                                    <div
+                                                            [ngClass]="
+                                                            testStatus == 'PLAYING'
+                                                              ? 'trigger drawn'
+                                                              : 'trigger'
+                                                          "
+                                                    ></div>
+                                                    <img src="assets/icons/tick.svg" alt="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                                <div class="video-actions-wrapper" [hidden]="!accessHardwareGranted">
+                                    <ion-fab-button class="controller" (click)="camStatusChanged()">
+                                        <img
+                                                *ngIf="camStatus === 'on'"
+                                                src="assets/icons/icon-cameraOn.svg"
+                                                alt=""/>
+                                        <img
+                                                *ngIf="camStatus === 'off'"
+                                                src="assets/icons/icon-cameraOff.svg"
+                                                alt=""/>
+                                    </ion-fab-button>
+                                    <ion-fab-button class="controller" (click)="muteStatusChanged()">
+                                        <img *ngIf="muteStatus === 'on'"
+                                             src="assets/icons/mic-on.svg" alt=""/>
+                                        <img *ngIf="muteStatus === 'off'"
+                                             src="assets/icons/mic-off.svg" alt=""/>
+                                    </ion-fab-button>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ion-content>

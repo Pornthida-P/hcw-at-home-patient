@@ -1,0 +1,105 @@
+@import "theme/variables.scss";
+
+ion-content {
+  height: 100%;
+  width: 100%;
+
+  background-color: var(--ion-color-primary) !important;
+  background-size: 100%;
+  background-position: center;
+}
+::ng-deep {
+  html[data-theme="accessibility"] {
+    ion-content {
+      background-image: unset !important;
+    }
+  }
+}
+ion-grid {
+  height: 100%;
+  width: 100%;
+}
+
+ion-button {
+  display: block;
+  margin: auto;
+}
+
+.doctor-title {
+  padding: 0;
+  display: block;
+  margin: auto;
+  text-align: center;
+  color: white;
+  font-size: 0.95em;
+  margin-top: 10px;
+}
+
+.cancel-btn {
+  margin-top: 15px;
+  --border-radius: 30px;
+  --background: #00b54a;
+  color: white;
+  width: auto;
+  display: inline-block;
+}
+
+.dismiss-btn {
+  --border-style: none;
+  --box-shadow: none;
+  --border-radius: 30px;
+  font-size: 0.8em;
+  margin-top: 10px;
+  background: white;
+  color: #000000;
+  border-radius: 30px;
+}
+
+ion-icon {
+  &[class*="fn-"] {
+    background-size: contain;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+    width: 1em;
+    height: 1em;
+  }
+
+  &[class*="fn-x"] {
+    color: white;
+    -webkit-mask: url("/icons/icon-cancel.svg");
+
+    background-color: white;
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) invert(1);
+
+    display: block;
+    margin: auto;
+  }
+}
+.your-about-to {
+  color: #fff;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.93em;
+}
+::ng-deep {
+  html[data-theme="accessibility"] {
+    ion-icon[class*="fn-x"] {
+      margin: unset !important;
+    }
+    .doctor-title {
+      text-align: left;
+      margin-left: 20px;
+    }
+    p {
+      text-align: left !important;
+      margin-left: 20px;
+    }
+
+    ion-button {
+      margin: 15px 0;
+    }
+
+  }
+}

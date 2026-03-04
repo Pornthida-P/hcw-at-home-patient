@@ -1,0 +1,42 @@
+<ion-content>
+  <ion-grid>
+    <ion-row style="height: 15%; width: 100%"></ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-row class="close-btn">
+          <ion-icon class="fn-x"></ion-icon>
+        </ion-row>
+        <ion-row>
+          <ion-title class="doctor-title">
+            {{ "closeConsultation.cancel" | translate }} <br />
+            <strong>{{
+              "closeConsultation.theConsultationRequest" | translate
+            }}</strong>
+          </ion-title>
+        </ion-row>
+        <ion-row class="your-about-to">
+          <p [innerHTML]="htmlString"></p>
+        </ion-row>
+
+        <ion-row>
+          <ion-button
+            (click)="dismiss()"
+            class="cancel-btn"
+
+            >{{ "closeConsultation.stayInTheQueue" | translate }}</ion-button
+          >
+        </ion-row>
+
+        <ion-row>
+          <ion-button 
+            (click)="closeConsultation()" 
+            class="dismiss-btn"
+            color="transparent"
+            >{{ "closeConsultation.cancelTheRequest" | translate }}</ion-button>
+        </ion-row>
+
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -1,0 +1,13 @@
+flows:
+- podman
+- deb
+- publish-github
+- sonar
+- ionic
+options:
+ distrib: "ubuntu"
+ codename: "focal"
+ external_git_url: "git@github.com:HCW-home/frontend-patient.git"
+modes:
+- ON_VERSION
+- ON_TAG

@@ -1,0 +1,113 @@
+{
+    "cgu": {
+        "termsAndConditions": "ናይ ኣጠቃቅማ ሓፈሻዊ ኣገባብ (CGU)",
+        "backToHome": "ናብ መበገሲ ገጽ ምምላስ"
+    },
+    "closingScreen": {
+        "theConsultationIsNowOver": "ስልካዊ-ማዕዳ ተዛዚሙ ኣሎ።",
+        "thankYouForUsing": "ናይ ስልካዊ-ማዕዳ ፕሮግራም ስለተጠቀምካ ነመስግን {{branding}}.",
+        "areYouSatisfied": "በዚ ፕሮግራም ዕጉብ ዲኻ፧ {{branding}} ?",
+        "doYouWantTo": "ርእይቶ ክትህበና ትደሊ'ዶ ፧",
+        "sendMyFeedback": "ርእይቶኻ ሃብ",
+        "thankYouForYourFeedback": "ንርእይቶኻ ነመስግን"
+    },
+    "consultation": {
+        "inProgress": "ኣብ መስርሕ ኣሎ",
+        "plsKeepThisOpenPage": "ነዛ ገጽ ክፍቲ ሕደጋ፣ ስልካዊ ማዕዳ ካብ ብሕጂ ገለ ደቃይቅ ክጅምር እዩ።",
+        "consultation": "ምስ ሓኪም ምምይያጥ",
+        "capInProgress": "ኣብ መስርሕ ኣሎ",
+        "youAreNowInConsultation": "ኣብ ስልካዊ ማዕዳ ኣለኻ ምስ",
+        "phone": "ተሌፎን :",
+        "requestForConsultation": "ጠለብ ናይ ስልካዊ-ማዕዳ",
+        "youAreInWaiting": "ብኽብረትኩም ተዓገሱ",
+        "cancel": "ሰረዘ",
+        "download": "ጽዓኖ",
+        "yourBrowserDoesNotSupport": "ናቪገተር ንድምጺ ኣይጾሮን እዩ",
+        "videoCallStarted": "ጻውዒት ብቪድዮ ተጀሚሩ",
+        "videoCallRequested": "ጻዉዒት ብቪድዮ",
+        "videoCallEnded": "ጻውዒት ብቪድዮ ተዛዚሙ",
+        "audioCallStarted": "ድምጻዊ ጻውዒት ተጀሚሩ",
+        "audioCallRefused": "ጻዉዒት ተነጺጉ",
+        "audioCallRequested": "ድማጻዊ ጻውዒት ሓተተ",
+        "audioCallEnded": "ድምጻዊ ጻውዒት ተዛዚሙ",
+        "joinCall": "ኣብ መስርሕ ንዘሎ ስልካዊ ማዕዳ ተጸንበር",
+        "enterYourMessage": "መልእኽትኹም ኣእትዉ",
+        "audioMessage": "ድምጻዊ መልእኽቲ",
+        "videoCallRefused": "ጻውዒት ብቪድዮ ተነጺጉ"
+    },
+    "login": {
+        "back": "Back",
+        "home": "ገጽ",
+        "translationRequestAccepted": "ንምርግጋጽካ ነመስግን፣ ኣብዚ ቀረባ እቶም ሓበሬታት ብኢመይል ክትቅበሎም ኢኻ።",
+        "translationRequestRefused": "ንመልሰኻ ነመስግን፣ ተረኻቢ ከምዘይኮንካ ንሓኪም ክንሕብር ኢና።",
+        "homeIsAHUGTeleconsultation": "",
+        "warning": "ተጠንቀቅ",
+        "thisApplicationIsIntented": "እዚ ፕሮግራም መተኣሳስሪ ሊንክ ብ ወይ ብኢመይል ብምስዳድ ንክሰርሕ ዝተዳለወ እዩ። ኣቀዲምካ ኣብዚ መተኣሳሰሪ ሊንክ ክሊክ ይግበሩ።",
+        "closeTheApplication": "ፕሮግራም ዕጸዎ",
+        "anErrorHasOccurred": "ገለ ጌጋ ኣጋጢሙ ኣሎ፣",
+        "ifYouReceivedThisInvitation": "እዚ ዕድመ እንተተቀቢልካዮ፣ ቀዲሕካ (ኮፕይ) ኣብ ናቪገተር ግበሮ።",
+        "thisAppOnlyWorksByInivitation": "እዚ ፕሮግራም ብዕድመ ጥራይ እዩ ዝሰርሕ ፣ እቲ ሓኪምካ ብ SMS ወይ ብኢመይል ዝሰደደልካ መተኣሳሰሪ ሊንክ ተጠቀሞ።",
+        "invitationKey": "ናይ ዕድመ መፍትሕ",
+        "joinTheConsultation": "ኣብ ስልካዊ-ማዕዳ ተጸንባር",
+        "pleaseWaitWhileYourRequest": "ጠለብካ ኣብ መስርሕ ስለዘሎ ብኽብረትካ ተዓገስ።",
+        "yourConsultationIsPlannedFor": "ስልካዊ ማዕዳኻ ተመዲቡ ዘሎ ን",
+        "addTheEventToYourCalendar": "እዚ መደብ ኣብ ኣጀንዳኻ መዝግቦ",
+        "theRemoteServerIsNotReachable": "ኮነክሽን ተከታተሎ",
+        "pleaseEnterYourInvitationKey": "ናይ ዕድመ መፍትሕ ኣእትው"
+    },
+    "translatorForm": {
+        "youAboutToJoinInviteWithPatientAndDOctor": " {{branding}} ሲስተም ናይ ስልካዊ ማዕዳ እዩ። ምስ ሓኪምን ተሓካምን ቆጽራ ኦንላይን ንኽትቅበል ቀሪብካ ኣለኻ።",
+        "caregiverName": "ስም ናይ ሓኪም",
+        "pleaseFillYourInfo": " ናብ ስልካዊ ማዕዳ ከመሓላልፈካ ዝኽእል መሰምር ምእንቲ ክንልእኸልካ ፣ ነዚ ሓበሬታታት ምልኣዮ።",
+        "name": "ስም ኣቦን ቀዳማይ ስምን",
+        "email": "ኢመይል",
+        "directNumber": "ቀጥታ ቁጽሪ",
+        "refuse": "ተረኻብነት የለን",
+        "acceptRequest": "ቆጸራ ተቀበል",
+        "nameIsRequired": "ምሉእ ስም ናይ ኣተርጋሚ ሕተት",
+        "emailIsRequired": "ናይ ኢመይል ሓበሬታ ውሰድ",
+        "emailIsInvalid": "እዚ ናይ ኢመይል ጽሑፍ ቅኑዕ ኣይኮነን",
+        "directNumberIsRequired": "ቀጥታ ቁጽሪ ሃብ",
+        "directNumberIsInvalid": "ቁጽርታት ከም ናይ ኢንተርናሽናል ኣጸሓሕፋ ክጸሓፉ ኣለዎም፣ 00XX ou +XX"
+    },
+    "closeConsultation": {
+        "cancel": "ሰረዘ",
+        "theConsultationRequest": "ጠለብ ናይ ስልካዊ ማዕዳ",
+        "youAreAboutTo": "  ነቲ  ጠለብ  ናይ ስልካዊ ማዕዳ ክትስርዞ ቀሪብካ ኣለኻ ፣ ኣብዚ ደረጃ ምስትስርዞ፣ ቦታኻ ኣብ መስመር መጸበይ ከተጥፍኦ ኢኻ ደሓር ከም ብሓድሽ ጠለብ ከድልየካ'ዩ። <br /> <br /> <br /> ብርግጽ ክጽርዞ ድሌት ኣለካ?",
+        "cancelTheRequest": "ነዚ ጠለብ ሰርዞ",
+        "stayInTheQueue": "ኣብ መጸበይ መስመር ተጸበ",
+        "refuse": "ተረካብነት የለን"
+    },
+    "test": {
+        "loading": "ምጽዓን ኣብ መስርሕ ኣሎ...",
+        "joinTheConsultation": "ከም እንደገና ምስታፍ",
+        "yourDeviceSeems": "መሳርሒኻ ምስ ሲስተም ዝሰማማዕ ይመስል፣ እቲ ኳሊቲ ናይ ቪድዮ ብቁዕ ወይ እኹል እንተዘየልዩ ናይ መሳርሒኻ መስመር እኹል እዩ።"
+    },
+    "videoRoom": {
+        "accept": "ተቀበል",
+        "refuse": "ነጸገ",
+        "callInProgress": "ይጽዉዕ ኣሎ"
+    },
+    "chooseAttachement": {
+        "send": "ለኣኸ",
+        "aFile": "ሓደ ፋይል",
+        "takeAPhoto": "ስእሊ ስደዱ ወይ ስደዱ",
+        "fromThePhone": "ፒዲኤፍ ፋይል ስደዱ",
+        "cancel": "ሰረዘ",
+        "promptLabelPhoto": "ካብ ፎቶ ጋለሪ",
+        "promptLabelPicture": "ካብ ካሜራ"
+    },
+    "fr": "Français",
+    "en": "English",
+    "es": "Español",
+    "de": "Deutsch",
+    "ar": "عربي",
+    "ta": "தமிழ்",
+    "hy": "Հայերեն",
+    "fa": "فارسی",
+    "ti": "ትግርኛ",
+    "ru": "Русский",
+    "it": "italiano",
+    "uk": "Українські",
+    "kk": "Қазақ"
+}
