@@ -2,6 +2,7 @@ import { environment } from '../../environments/environment';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Platform } from '@ionic/angular';
+import { safeGetItem, safeSetItem, safeRemoveItem } from './safe-storage';
 @Injectable({
     providedIn: 'root',
 })
@@ -25,17 +26,17 @@ export class GlobalVariableService {
     }
 
     public resetHost() {
-        localStorage.removeItem('host');
+        safeRemoveItem('host');
     }
     public getHost() {
-        let host = localStorage.getItem('host');
+        let host = safeGetItem('host');
 
         if (this.platform.is('ios') || this.platform.is('android')) {
             if (!host) {
                 host = environment.host;
             }
 
-            localStorage.setItem('host', host);
+            safeSetItem('host', host);
         } else {
             host = environment.host;
         }
@@ -48,7 +49,6 @@ export class GlobalVariableService {
     }
 
     public getApiPath() {
-        //prevent double slash -> https://app.hcw-at-home.ch//api/v1 ->  https://app.hcw-at-home.ch/api/v1
         let apiUrl = (this.hostBehaviorSubject.getValue() + environment.api).replace(/([^:]\/)\/+/g, '$1');
         apiUrl = apiUrl.replace(/(\:)\:/, '$1');
         return apiUrl;

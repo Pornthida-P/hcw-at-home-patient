@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { LocationStrategy } from "@angular/common";
 import { ConfigService } from '../services/config.service';
 import {TranslateService} from "@ngx-translate/core";
+import { concat, Subscription } from 'rxjs';
+import { defaultIfEmpty, filter, map, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-cgu',
@@ -15,6 +17,10 @@ export class CguPage implements OnInit {
   countries = [];
   currentLang: string = 'en';
   selectedTermName = 'terms.en.md';
+  // Markdown actually loaded (null = no valid terms file)
+  termsContent: string | null = null;
+  termsLoading = true;
+  private termsRequest: Subscription;
 
   constructor(
       public configService: ConfigService,
@@ -62,32 +68,35 @@ export class CguPage implements OnInit {
 
     const specificTerms =  !country || country === 'Any' ? `terms.${this.currentLang}.md` :  `terms.${country}.${this.currentLang}.md`;
 
+    // Try the files in order and keep the first one that is real
+    // markdown (not the index.html SPA fallback); otherwise show a message.
+    const candidates = [`assets/terms/${specificTerms}`, `assets/terms/${fallbackTerms}`, 'assets/terms.md'];
     this.error = false;
-    this.configService.checkTermsFileExists(specificTerms).subscribe(
-        exists => {
-          if (exists) {
-            this.selectedTermName = specificTerms;
-            this.error = false;
-          } else {
-            this.configService.checkTermsFileExists(fallbackTerms).subscribe(
-                fallbackExists => {
-                  if (fallbackExists) {
-                    this.selectedTermName = fallbackTerms;
-                    this.error = false;
-                  } else {
-                    this.error = true;
-                  }
-                },
-                error => {
-                  this.error = true;
-                }
-            );
-          }
-        },
-        error => {
+    this.termsLoading = true;
+    if (this.termsRequest) {
+      this.termsRequest.unsubscribe();
+    }
+    this.termsRequest = concat(
+      ...candidates.map(path =>
+        this.configService.loadTermsFile(path).pipe(map(content => ({ path, content })))
+      )
+    )
+      .pipe(
+        filter(result => !!result.content),
+        take(1),
+        defaultIfEmpty(null)
+      )
+      .subscribe(result => {
+        this.termsLoading = false;
+        if (result) {
+          this.selectedTermName = result.path.replace('assets/terms/', '');
+          this.termsContent = result.content;
+          this.error = false;
+        } else {
+          this.termsContent = null;
           this.error = true;
         }
-    );
+      });
   }
 
 }

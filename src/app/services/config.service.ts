@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import {BehaviorSubject, Observable, of, Subject} from "rxjs";
 import { GlobalVariableService } from "./global-variable.service";
 import {catchError, map, switchMap, tap} from "rxjs/operators";
@@ -74,11 +74,36 @@ export class ConfigService {
         })();
     }
 
-    checkTermsFileExists(fileName: string) {
-        return this.http.get(`assets/terms/${fileName}`, { responseType: 'text' }).pipe(
-            map(() => new Observable()),
-            catchError(() => of(false))
+    /**
+     * Load a terms markdown file and return its content, or
+     * null when it is not available. When the file is missing, the web server's
+     * SPA fallback (try_files ... /index.html) answers HTTP 200 with index.html,
+     * which used to be treated as "file exists" and rendered as raw HTML text.
+     */
+    loadTermsFile(path: string): Observable<string | null> {
+        return this.http.get(path, { responseType: 'text', observe: 'response' }).pipe(
+            map((res: HttpResponse<string>) => (ConfigService.isValidTermsResponse(res) ? res.body : null)),
+            catchError(() => of(null))
         );
+    }
+
+    static isValidTermsResponse(res: HttpResponse<string>): boolean {
+        if (!res || res.status !== 200 || typeof res.body !== 'string') {
+            return false;
+        }
+        const contentType = (res.headers && res.headers.get('content-type')) || '';
+        if (contentType.toLowerCase().includes('text/html')) {
+            return false;
+        }
+        const head = res.body.trim().slice(0, 200).toLowerCase();
+        if (!head) {
+            return false;
+        }
+        return !(head.startsWith('<!doctype') || head.startsWith('<html') || head.includes('<app-root') || head.includes('<base href'));
+    }
+
+    checkTermsFileExists(fileName: string) {
+        return this.loadTermsFile(`assets/terms/${fileName}`).pipe(map(content => !!content));
     }
 
     shouldHideCallerName(userRole: string): boolean {

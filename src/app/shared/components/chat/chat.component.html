@@ -44,7 +44,7 @@
     <ion-item>
       <ion-input
         required
-        placeholder="Send a message"
+        [placeholder]="'consultation.enterYourMessage' | translate"
         [(ngModel)]="message"
         (keyup.enter)="sendMessage()"
       ></ion-input>

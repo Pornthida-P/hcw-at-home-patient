@@ -51,12 +51,17 @@
 
                             </div>
 
+                            <div class="messages error invite-error" *ngIf="noInviteError" role="alert">
+                                <ion-icon name="close-circle-outline"></ion-icon>
+                                <span>{{ (inviteCanceled ? 'login.invitationCanceled' : 'login.theInvitationIsNotOrNoLongerValide') | translate }}</span>
+                            </div>
+
                             <button
                                     class="btn green proceed-btn big"
                                     type="button"
                                     [disabled]="loading"
                                     (click)="proceedToConsultation()"
-                                    *ngIf="inviteToken && showJoinButton">
+                                    *ngIf="inviteToken && showJoinButton && !noInviteError">
                                 {{
                                     loading
                                         ? ("test.loading" | translate)

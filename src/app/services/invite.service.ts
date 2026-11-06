@@ -17,7 +17,7 @@ export class InviteService {
   }
 
   getAcknowledgementStatus(token: string) {
-    return this.http.get<{requiresAcknowledgment: boolean, patientLanguage: string}>(this.globalVariableService.getApiPath() + '/invite/status/' + token);
+    return this.http.get<{requiresAcknowledgment: boolean, patientLanguage: string, canceled?: boolean}>(this.globalVariableService.getApiPath() + '/invite/status/' + token);
   }
 
   acknowledgeInvite(body) {

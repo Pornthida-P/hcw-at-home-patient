@@ -7,12 +7,25 @@ import { environment } from './environments/environment';
 
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 
-
 if (environment.production) {
-  enableProdMode();
+    enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.log(err));
+platformBrowserDynamic()
+    .bootstrapModule(AppModule)
+    .catch((err) => {
+        if (/Loading chunk|ChunkLoadError/.test(err?.message || '')) {
+            try {
+                const reloaded = sessionStorage.getItem('chunk-reload');
+                if (!reloaded) {
+                    sessionStorage.setItem('chunk-reload', '1');
+                    window.location.reload();
+                    return;
+                }
+                sessionStorage.removeItem('chunk-reload');
+            } catch {}
+        }
+        console.log(err);
+    });
 
 defineCustomElements(window);

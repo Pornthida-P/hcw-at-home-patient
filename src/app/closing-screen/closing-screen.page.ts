@@ -7,6 +7,7 @@ import { ConfigService } from "../services/config.service";
 import { Platform } from "@ionic/angular";
 import { App } from '@capacitor/app';
 import {StorageService} from "../services/storage.service";
+import { ConsultationReportService } from "../shared/pdf/consultation-report.service";
 
 @Component({
   selector: "app-closing-screen",
@@ -22,6 +23,10 @@ export class ClosingScreenPage implements OnInit {
   public userRating: string = null;
   public userComment: string = "";
   public ratings: string[] = ["good", "ok", "bad"];
+  // overview entry of the closed consultation (consultation, nurse, doctor)
+  public consultation = null;
+  public reportLoading: boolean = false;
+  public reportError: boolean = false;
 
   currentUser;
   constructor(
@@ -32,6 +37,7 @@ export class ClosingScreenPage implements OnInit {
     private activeRoute: ActivatedRoute,
     private storageService: StorageService,
     private consultationService: ConsultationService,
+    private consultationReportService: ConsultationReportService,
   ) {}
 
   ngOnInit() {
@@ -44,14 +50,41 @@ export class ClosingScreenPage implements OnInit {
     this.consultationService
         .getConsultation(this.consultationId).subscribe({
       next: (res) => {
-        this.feedbackSaved = !!res.queue?.disableFeedback;
-        this.feedbackEmpty = !!res.queue?.disableFeedback;
+        this.consultation = res;
+        this.feedbackSaved = !!res?.queue?.disableFeedback;
+        this.feedbackEmpty = !!res?.queue?.disableFeedback;
         this.loading = false;
       }, error: () =>{
-
+        this.loading = false;
       }
     })
 
+  }
+
+  /**
+   * The report can be downloaded by the users who can export it from the
+   * dashboard history (same consultation and messages access).
+   */
+  canDownloadReport() {
+    return !!this.consultation?.consultation && this.currentUser
+      && this.currentUser.role !== 'translator' && this.currentUser.role !== 'guest';
+  }
+
+  downloadReport() {
+    if (this.reportLoading || !this.consultation) {
+      return;
+    }
+    this.reportLoading = true;
+    this.reportError = false;
+    const { consultation, nurse, doctor } = this.consultation;
+    this.consultationReportService.generatePDF(consultation, nurse, doctor)
+      .catch((err) => {
+        console.error('PDF export failed', err);
+        this.reportError = true;
+      })
+      .finally(() => {
+        this.reportLoading = false;
+      });
   }
 
   /**
