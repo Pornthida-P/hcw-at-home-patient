@@ -139,7 +139,7 @@ export class ConsultationService {
 
     return this.fetchConsultations().pipe(map(() => {
       const consultation = this.consultationsOverview.find(c => c._id === id);
-      if (consultation._id) {
+      if (consultation && consultation._id) {
         consultation.id = consultation._id
       }
       return consultation ? consultation : null;

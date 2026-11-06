@@ -32,15 +32,17 @@
                                     </div>
                                     <div class="d-flex ion-align-items-center">
                                         <ion-icon class="failure-icon" name="close-circle"></ion-icon>
-                                        <p class="description">{{ 'acknowledgeInvite.errorDescription' | translate}}</p>
+                                        <p class="description">{{ (canceled ? 'login.invitationCanceled' : 'acknowledgeInvite.errorDescription') | translate}}</p>
                                     </div>
                                 </div>
+                                @if (!canceled) {
                                 <button
                                         class="btn green proceed-btn big"
                                         type="button"
                                         (click)="testCall()">
                                     {{ 'acknowledgeInvite.testButton' | translate }}
                                 </button>
+                                }
                             </div>
                         }
                     </div>

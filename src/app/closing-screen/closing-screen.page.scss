@@ -96,6 +96,39 @@ ion-textarea {
   padding: 10px 20px 7px;
 }
 
+.report {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.report-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 60px;
+  border: 2px solid #086baf;
+  background: #fff;
+  color: #086baf;
+  font-size: 1.1em;
+  padding: 8px 20px;
+  cursor: pointer;
+
+  &[disabled] {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  ion-spinner {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.report-error {
+  color: #f44336;
+  margin-top: 10px;
+}
+
 @media screen and (max-width: 800px) {
   .container {
     width: 92%;

@@ -30,9 +30,11 @@
 
                 <h2>{{ 'cgu.termsAndConditions' | translate }}</h2>
 
-                <markdown [src]="error ? 'assets/terms.md' : 'assets/terms/' + selectedTermName">
-                    Terms and conditions have not yet been configured.
-                </markdown>
+                <!-- Content is loaded and validated in CguPage (never the index.html fallback) -->
+                <markdown *ngIf="termsContent" [data]="termsContent"></markdown>
+                <p class="terms-not-available" *ngIf="!termsLoading && !termsContent">
+                    {{ 'cgu.notAvailable' | translate }}
+                </p>
 
                 <div class="back">
                     <button class="btn big"

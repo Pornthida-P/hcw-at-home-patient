@@ -1,19 +1,23 @@
 import { Injectable } from '@angular/core';
+import { safeGetItem, safeSetItem, safeClear } from './safe-storage';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class StorageService {
+    constructor() {}
 
-  constructor() { }
-
-  clear(): void {
-    const language = localStorage.getItem('hhp-lang');
-    localStorage.clear();
-    if (language) {
-      localStorage.setItem('hhp-lang', language);
-    } else {
-      localStorage.setItem('hhp-lang', 'en');
+    clear(): void {
+        const language = safeGetItem('hhp-lang');
+        const languageInvite = safeGetItem('hhp-lang-invite');
+        safeClear();
+        if (languageInvite) {
+            safeSetItem('hhp-lang-invite', languageInvite);
+        }
+        if (language) {
+            safeSetItem('hhp-lang', language);
+        } else {
+            safeSetItem('hhp-lang', 'en');
+        }
     }
-  }
 }

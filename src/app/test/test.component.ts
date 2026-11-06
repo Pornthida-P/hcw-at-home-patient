@@ -1,72 +1,69 @@
-import {RoomService, Stream} from "hcw-stream-lib";
-import {SocketEventsService} from "../services/socket-events.service";
-import {ConsultationService} from "../services/consultation.service";
-import {AndroidPermissions} from "@awesome-cordova-plugins/android-permissions/ngx";
-import {Platform} from "@ionic/angular";
-import {ActivatedRoute, Router} from "@angular/router";
-import {OpenViduService} from "../shared/services/openvidu.service";
-import {Component, OnInit, HostListener, OnDestroy, NgZone} from "@angular/core";
-import {Subscription} from "rxjs";
-import {TranslateService} from "@ngx-translate/core";
-import {AuthService} from "../auth/auth.service";
-import {ConfigService} from "../services/config.service";
-import {InviteService} from "../services/invite.service";
-import {MediaService} from "../shared/services/media.service";
+import { RoomService, Stream } from 'hcw-stream-lib';
+import { SocketEventsService } from '../services/socket-events.service';
+import { ConsultationService } from '../services/consultation.service';
+import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
+import { Platform } from '@ionic/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { OpenViduService } from '../shared/services/openvidu.service';
+import { Component, OnInit, HostListener, OnDestroy, NgZone } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
+import { AuthService } from '../auth/auth.service';
+import { ConfigService } from '../services/config.service';
+import { InviteService } from '../services/invite.service';
+import { MediaService } from '../shared/services/media.service';
+import { safeGetItem, safeSetItem } from '../services/safe-storage';
 
 @Component({
-    selector: "app-test-call",
-    templateUrl: "./test.component.html",
-    styleUrls: ["./test.component.scss"],
+    selector: 'app-test-call',
+    templateUrl: './test.component.html',
+    styleUrls: ['./test.component.scss'],
 })
 export class TestComponent implements OnInit, OnDestroy {
-    ANDROID_PERMISSIONS = [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-    ];
+    ANDROID_PERMISSIONS = ['android.permission.CAMERA', 'android.permission.RECORD_AUDIO', 'android.permission.MODIFY_AUDIO_SETTINGS'];
     session;
     websocket: WebSocket;
-    testStatus = "DISCONNECTED";
+    testStatus = 'DISCONNECTED';
     showSpinner = false;
     msgChain = [];
     volumeLevel = 0;
     accessHardwareGranted = null;
     testStarted: Boolean = true;
     loading: Boolean = false;
-    globalMessage = "";
-    globalWarning = "";
-    inviteToken = "";
+    globalMessage = '';
+    globalWarning = '';
+    inviteToken = '';
     subscriptions: Subscription[] = [];
     peerId;
     myCamStream: Stream;
 
-    muteStatus: "on" | "off" = "off";
-    camStatus: "on" | "off" = "off";
+    muteStatus: 'on' | 'off' = 'off';
+    camStatus: 'on' | 'off' = 'off';
 
     permissionDenied = false;
     permissionError = false;
     showRetryButton = false;
     denied = true;
 
-
     currentUser;
     submitted = false;
-    error = "";
+    error = '';
     email: string;
     password: string;
-    inviteKey = "";
-    firstName = "";
-    lastName = "";
-    inviteKeyError = "";
-    birthDate = "";
-    birthError = "";
+    inviteKey = '';
+    firstName = '';
+    lastName = '';
+    inviteKeyError = '';
+    birthDate = '';
+    birthError = '';
     invite = null;
     isExpert = false;
-    expertToken = "";
+    expertToken = '';
 
     translator;
     scheduledFor;
     noInviteError = false;
+    inviteCanceled = false;
     noTokenProvided = false;
     translationRequestRefused = false;
     showJoinButton = true;
@@ -86,10 +83,9 @@ export class TestComponent implements OnInit, OnDestroy {
         private socketService: SocketEventsService,
         private androidPermissions: AndroidPermissions,
         private route: ActivatedRoute,
-    ) {
-    }
+    ) {}
 
-    @HostListener("window:beforeunload")
+    @HostListener('window:beforeunload')
     beforeunloadHandler() {
         this.endTestVideo();
     }
@@ -97,103 +93,143 @@ export class TestComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.showSpinner = true;
         this.testStarted = true;
-        this.inviteToken = localStorage.getItem("inviteToken");
+        // Read the token from the URL first so the flow survives a fresh page
+        // load in another browser (e.g. WhatsApp in-app WebView -> external
+        // browser), where localStorage is empty. Fall back to localStorage.
+        const urlToken = this.route.snapshot.queryParamMap.get('invite');
+        this.inviteToken = urlToken || safeGetItem('inviteToken');
+        if (urlToken) {
+            safeSetItem('inviteToken', urlToken);
+        }
         const source = this.route.snapshot.queryParamMap.get('source');
         if (source === 'acknowledge') {
             this.showJoinButton = false;
         }
+        this.checkInviteValidity();
         this.requestMedia();
     }
 
+    checkInviteValidity() {
+        if (!this.inviteToken) {
+            return;
+        }
+        this.subscriptions.push(
+            this.inviteService.getInviteFromToken(this.inviteToken).subscribe(
+                (invite) => {
+                    if (this.isInviteNoLongerValid(invite)) {
+                        this.invite = invite;
+                        this.inviteCanceled = invite.status === 'CANCELED';
+                        this.noInviteError = true;
+                    }
+                },
+                () => {},
+            ),
+        );
+    }
+
+    isInviteNoLongerValid(invite) {
+        return !!invite && !invite.isExpert && (invite.status === 'CANCELED' || invite.status === 'REFUSED');
+    }
+
     async requestMedia(): Promise<void> {
-        const audioResult = await this.mediaService.getMedia("audio");
+        const audioResult = await this.mediaService.getMedia('audio');
         if (audioResult instanceof MediaStream) {
-            audioResult.getTracks().forEach(t => t.stop());
+            audioResult.getTracks().forEach((t) => t.stop());
         }
-        const videoResult = await this.mediaService.getMedia("video");
+        const videoResult = await this.mediaService.getMedia('video');
         if (videoResult instanceof MediaStream) {
-            videoResult.getTracks().forEach(t => t.stop());
+            videoResult.getTracks().forEach((t) => t.stop());
         }
 
         try {
-            const cameraStatus = await navigator.permissions.query({ name: "camera" as any });
-            cameraStatus.addEventListener("change", (evt) => {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then((stream) => {
-                        stream.getTracks().forEach(t => t.stop());
-                        this.showRetryButton = true;
-                    })
-                    .catch((err) => {
-                        this.camStatus = "off";
-                        this.showRetryButton = true;
-                    });
-            }, { once: true });
+            const cameraStatus = await navigator.permissions.query({ name: 'camera' as any });
+            cameraStatus.addEventListener(
+                'change',
+                (evt) => {
+                    navigator.mediaDevices
+                        .getUserMedia({ video: true })
+                        .then((stream) => {
+                            stream.getTracks().forEach((t) => t.stop());
+                            this.showRetryButton = true;
+                        })
+                        .catch((err) => {
+                            this.camStatus = 'off';
+                            this.showRetryButton = true;
+                        });
+                },
+                { once: true },
+            );
         } catch (error) {
-            console.log('camera','(not supported) ');
+            console.log('camera', '(not supported) ');
         }
 
         try {
-            const audioStatus = await navigator.permissions.query({ name: "microphone" as any });
-            audioStatus.addEventListener("change", (evt) => {
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then((stream) => {
-                        stream.getTracks().forEach(t => t.stop());
-                        this.showRetryButton = true;
-                    })
-                    .catch((err) => {
-                        this.muteStatus = "off";
-                        this.showRetryButton = true;
-                    });
-            }, { once: true });
+            const audioStatus = await navigator.permissions.query({ name: 'microphone' as any });
+            audioStatus.addEventListener(
+                'change',
+                (evt) => {
+                    navigator.mediaDevices
+                        .getUserMedia({ audio: true })
+                        .then((stream) => {
+                            stream.getTracks().forEach((t) => t.stop());
+                            this.showRetryButton = true;
+                        })
+                        .catch((err) => {
+                            this.muteStatus = 'off';
+                            this.showRetryButton = true;
+                        });
+                },
+                { once: true },
+            );
         } catch (error) {
-            console.log('microphone','(not supported) ');
+            console.log('microphone', '(not supported) ');
         }
 
-        this.permissionDenied = audioResult === "denied" || videoResult === "denied";
-        this.permissionError = audioResult === "error" || videoResult === "error";
+        this.permissionDenied = audioResult === 'denied' || videoResult === 'denied';
+        this.permissionError = audioResult === 'error' || videoResult === 'error';
 
-        if (audioResult === "denied" || videoResult === "denied") {
+        if (audioResult === 'denied' || videoResult === 'denied') {
             this.denied = true;
-            this.muteStatus = audioResult === "denied" ? "off" : "on";
-            this.camStatus = videoResult === "denied" ? "off" : "on";
+            this.muteStatus = audioResult === 'denied' ? 'off' : 'on';
+            this.camStatus = videoResult === 'denied' ? 'off' : 'on';
         } else {
             this.denied = false;
         }
 
         if (this.permissionDenied || this.permissionError) {
-            if (audioResult === "denied" && videoResult !== "denied" && videoResult !== "error") {
+            if (audioResult === 'denied' && videoResult !== 'denied' && videoResult !== 'error') {
                 this.msgChain.push({
                     success: false,
-                    msg: this.translate.instant("test.micDenied"),
+                    msg: this.translate.instant('test.micDenied'),
                 });
-                this.globalMessage = this.translate.instant("test.youCanStillJoin");
+                this.globalMessage = this.translate.instant('test.youCanStillJoin');
             }
-            if (videoResult === "denied" && audioResult !== "denied" && audioResult !== "error") {
+            if (videoResult === 'denied' && audioResult !== 'denied' && audioResult !== 'error') {
                 this.msgChain.push({
                     success: false,
-                    msg: this.translate.instant("test.cameraDenied"),
+                    msg: this.translate.instant('test.cameraDenied'),
                 });
-                this.globalMessage = this.translate.instant("test.youCanStillJoin");
+                this.globalMessage = this.translate.instant('test.youCanStillJoin');
             }
-            if (videoResult === "denied" && audioResult === "denied") {
+            if (videoResult === 'denied' && audioResult === 'denied') {
                 this.msgChain.push({
                     success: false,
-                    msg: this.translate.instant("test.bothDenied"),
+                    msg: this.translate.instant('test.bothDenied'),
                 });
-                this.globalMessage = this.translate.instant("test.youCanStillJoin");
+                this.globalMessage = this.translate.instant('test.youCanStillJoin');
             }
-            if (audioResult === "error" || videoResult === "error") {
+            if (audioResult === 'error' || videoResult === 'error') {
                 this.msgChain.push({
                     success: false,
-                    msg: this.translate.instant("test.permissionError"),
+                    msg: this.translate.instant('test.permissionError'),
                 });
-                this.globalMessage = this.translate.instant("test.youCanStillJoin");
+                this.globalMessage = this.translate.instant('test.youCanStillJoin');
             }
             this.startTest();
         } else {
-            this.muteStatus = "on";
-            this.camStatus = "on";
-            this.globalWarning = this.translate.instant("test.yourDeviceSeems");
+            this.muteStatus = 'on';
+            this.camStatus = 'on';
+            this.globalWarning = this.translate.instant('test.yourDeviceSeems');
             this.startTest();
         }
     }
@@ -205,14 +241,14 @@ export class TestComponent implements OnInit, OnDestroy {
     testVideo() {
         this.openviduSev
             .getTestToken()
-            .then(({token, peerId}) => {
+            .then(({ token, peerId }) => {
                 this.peerId = peerId;
                 this.connectToSession(token);
             })
             .catch((error) => {
                 this.msgChain.push({
                     success: false,
-                    msg: "Error connecting to session: " + error,
+                    msg: 'Error connecting to session: ' + error,
                 });
             });
     }
@@ -220,10 +256,10 @@ export class TestComponent implements OnInit, OnDestroy {
     connectToSession(token: string) {
         // this.msgChain = [];
         this.session = true;
-        this.testStatus = "CONNECTING";
+        this.testStatus = 'CONNECTING';
         this.accessHardwareGranted = null;
 
-        if (this.platform.is("android") && this.platform.is("hybrid")) {
+        if (this.platform.is('android') && this.platform.is('hybrid')) {
             this.checkAndroidPermissions()
                 .then((res) => {
                     this.initSession(token);
@@ -239,7 +275,7 @@ export class TestComponent implements OnInit, OnDestroy {
     initSession(token: string) {
         this.accessHardwareGranted = true;
         this.session = true;
-        this.roomService.init({peerId: this.peerId});
+        this.roomService.init({ peerId: this.peerId });
         this.roomService.join({
             roomId: this.peerId,
             joinVideo: true,
@@ -247,22 +283,24 @@ export class TestComponent implements OnInit, OnDestroy {
             token: token,
         });
 
-        this.roomService.onCamProducing.subscribe((stream) => {
-            this.myCamStream = stream;
-            this.testStatus = "PLAYING";
-            this.showSpinner = false;
+        this.roomService.onCamProducing.subscribe(
+            (stream) => {
+                this.myCamStream = stream;
+                this.testStatus = 'PLAYING';
+                this.showSpinner = false;
 
-            this.connectWebCam();
-        }, (error) => {
-            this.msgChain.push({success: false, msg: this.translate.instant("test.connectivityIssue")});
-        });
-
+                this.connectWebCam();
+            },
+            (error) => {
+                this.msgChain.push({ success: false, msg: this.translate.instant('test.connectivityIssue') });
+            },
+        );
     }
 
     retryPermission() {
         this.msgChain = [];
-        this.globalWarning = "";
-        this.globalMessage = "";
+        this.globalWarning = '';
+        this.globalMessage = '';
         this.roomService.close();
         this.showRetryButton = false;
         this.requestMedia();
@@ -274,11 +312,9 @@ export class TestComponent implements OnInit, OnDestroy {
             return;
         }
         if (!this.inviteToken && !this.inviteKey) {
-            this.inviteKeyError = this.translate.instant(
-                "login.pleaseEnterYourInvitationKey"
-            );
+            this.inviteKeyError = this.translate.instant('login.pleaseEnterYourInvitationKey');
         } else {
-            this.inviteKeyError = "";
+            this.inviteKeyError = '';
         }
 
         if (this.inviteKeyError || this.birthError) {
@@ -289,7 +325,7 @@ export class TestComponent implements OnInit, OnDestroy {
         this.loading = true;
 
         const inviteToken = this.inviteToken ? this.inviteToken : this.isExpert ? this.expertToken : this.inviteKey;
-        localStorage.setItem("inviteToken", inviteToken);
+        safeSetItem('inviteToken', inviteToken);
 
         this.loading = false;
         this.submitted = false;
@@ -313,8 +349,8 @@ export class TestComponent implements OnInit, OnDestroy {
                     this.invite = invite;
                     this.handleInvite(invite, accept);
                 },
-                (err) => this.handleTokenError(err)
-            )
+                (err) => this.handleTokenError(err),
+            ),
         );
     }
 
@@ -323,24 +359,29 @@ export class TestComponent implements OnInit, OnDestroy {
         this.isExpert = !!invite.isExpert;
         this.expertToken = invite.expertToken;
 
+        if (this.isInviteNoLongerValid(invite)) {
+            this.handleTokenError('Invite status ' + invite.status);
+            return;
+        }
+
         if (this.currentUser) {
             if (this.currentUser.inviteToken === this.invite.id) {
-                if (invite.type === "TRANSLATOR_REQUEST") {
+                if (invite.type === 'TRANSLATOR_REQUEST') {
                     return;
                 }
 
                 return this.handleUser(this.currentUser);
             } else {
                 await this.authService.logout();
-                localStorage.setItem("inviteToken", this.inviteToken);
+                safeSetItem('inviteToken', this.inviteToken);
                 this.noInviteError = null;
             }
         } else if (
             // invite.status === "ACCEPTED" ||
-            invite.status === "REFUSED" ||
-            invite.status === "CANCELED"
+            invite.status === 'REFUSED' ||
+            invite.status === 'CANCELED'
         ) {
-            this.handleTokenError("Invite status " + invite.status);
+            this.handleTokenError('Invite status ' + invite.status);
             return;
         } else {
             this.noInviteError = false;
@@ -359,14 +400,14 @@ export class TestComponent implements OnInit, OnDestroy {
     }
 
     acceptInvite(invite) {
-        if (invite.type === "TRANSLATOR_REQUEST") {
+        if (invite.type === 'TRANSLATOR_REQUEST') {
             return;
         }
-        const firstName = localStorage.getItem("firstName");
-        const lastName = localStorage.getItem("lastName");
-        const data: any = this.isExpert ?
-            [this.expertToken, undefined, undefined, {firstName, lastName}] :
-            [this.inviteToken, this.birthDate, this.translator];
+        const firstName = safeGetItem('firstName');
+        const lastName = safeGetItem('lastName');
+        const data: any = this.isExpert
+            ? [this.expertToken, undefined, undefined, { firstName, lastName }]
+            : [this.inviteToken, this.birthDate, this.translator];
         this.authService
             // @ts-ignore
             .loginWithInvite(...data)
@@ -383,17 +424,17 @@ export class TestComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         this.conServ
             .createConsultation({
-                queue: "covid19",
-                gender: "unknown",
-                IMADTeam: "none",
+                queue: 'covid19',
+                gender: 'unknown',
+                IMADTeam: 'none',
                 invitationToken: this.inviteToken,
             })
             .toPromise()
             .then((consultation) => {
                 if (!consultation) {
-                    return this.router.navigate(["await-consultation"]);
+                    return this.router.navigate(['await-consultation']);
                 }
-                localStorage.setItem("currentConsultation", consultation.id);
+                safeSetItem('currentConsultation', consultation.id);
                 this.handleConsultation(consultation.id);
             })
             .catch((err) => {
@@ -406,11 +447,14 @@ export class TestComponent implements OnInit, OnDestroy {
     }
 
     handleConsultation(consultationId) {
-        this.router.navigate(["consultation", consultationId]);
+        this.router.navigate(['consultation', consultationId]);
     }
 
     handleTokenError(err?) {
-        console.error("Handle token error ", err);
+        console.error('Handle token error ', err);
+        this.loading = false;
+        this.submitted = false;
+        this.inviteCanceled = !this.isExpert && this.invite?.status === 'CANCELED';
         setTimeout(() => {
             this.noInviteError = true;
         }, 100);
@@ -431,7 +475,7 @@ export class TestComponent implements OnInit, OnDestroy {
     }
 
     connectWebCam() {
-        this.testStatus = "CONNECTED";
+        this.testStatus = 'CONNECTED';
         this.initAudioPublisher();
     }
 
@@ -444,7 +488,7 @@ export class TestComponent implements OnInit, OnDestroy {
             this.roomService.close();
             this.session = null;
         }
-        this.testStatus = "DISCONNECTED";
+        this.testStatus = 'DISCONNECTED';
         this.showSpinner = false;
         this.testStarted = false;
         this.msgChain = [];
@@ -455,26 +499,26 @@ export class TestComponent implements OnInit, OnDestroy {
             });
             this.myCamStream = null;
         }
-        localStorage.setItem("videoCallTested", "true");
+        safeSetItem('videoCallTested', 'true');
     }
 
     muteStatusChanged() {
-        if (this.muteStatus === "on") {
+        if (this.muteStatus === 'on') {
             this.roomService.muteMic();
-            this.muteStatus = "off";
+            this.muteStatus = 'off';
         } else {
             this.roomService.unmuteMic();
-            this.muteStatus = "on";
+            this.muteStatus = 'on';
         }
     }
 
     camStatusChanged() {
-        if (this.camStatus === "on") {
+        if (this.camStatus === 'on') {
             this.roomService.disableWebcam();
-            this.camStatus = "off";
+            this.camStatus = 'off';
         } else {
-            this.roomService.updateWebcam({start: true});
-            this.camStatus = "on";
+            this.roomService.updateWebcam({ start: true });
+            this.camStatus = 'on';
         }
     }
 
@@ -488,67 +532,50 @@ export class TestComponent implements OnInit, OnDestroy {
                             .checkPermission(this.androidPermissions.PERMISSION.CAMERA)
                             .then((camera) => {
                                 this.androidPermissions
-                                    .checkPermission(
-                                        this.androidPermissions.PERMISSION.RECORD_AUDIO
-                                    )
+                                    .checkPermission(this.androidPermissions.PERMISSION.RECORD_AUDIO)
                                     .then((audio) => {
                                         this.androidPermissions
-                                            .checkPermission(
-                                                this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS
-                                            )
+                                            .checkPermission(this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS)
                                             .then((modifyAudio) => {
-                                                if (
-                                                    camera.hasPermission &&
-                                                    audio.hasPermission &&
-                                                    modifyAudio.hasPermission
-                                                ) {
+                                                if (camera.hasPermission && audio.hasPermission && modifyAudio.hasPermission) {
                                                     resolve(null);
                                                 } else {
                                                     reject(
                                                         new Error(
-                                                            "Permissions denied: " +
-                                                            "\n" +
-                                                            " CAMERA = " +
-                                                            camera.hasPermission +
-                                                            "\n" +
-                                                            " AUDIO = " +
-                                                            audio.hasPermission +
-                                                            "\n" +
-                                                            " AUDIO_SETTINGS = " +
-                                                            modifyAudio.hasPermission
-                                                        )
+                                                            'Permissions denied: ' +
+                                                                '\n' +
+                                                                ' CAMERA = ' +
+                                                                camera.hasPermission +
+                                                                '\n' +
+                                                                ' AUDIO = ' +
+                                                                audio.hasPermission +
+                                                                '\n' +
+                                                                ' AUDIO_SETTINGS = ' +
+                                                                modifyAudio.hasPermission,
+                                                        ),
                                                     );
                                                 }
                                             })
                                             .catch((err) => {
                                                 console.error(
-                                                    "Checking permission " +
-                                                    this.androidPermissions.PERMISSION
-                                                        .MODIFY_AUDIO_SETTINGS +
-                                                    " failed"
+                                                    'Checking permission ' +
+                                                        this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS +
+                                                        ' failed',
                                                 );
                                                 reject(err);
                                             });
                                     })
                                     .catch((err) => {
-                                        console.error(
-                                            "Checking permission " +
-                                            this.androidPermissions.PERMISSION.RECORD_AUDIO +
-                                            " failed"
-                                        );
+                                        console.error('Checking permission ' + this.androidPermissions.PERMISSION.RECORD_AUDIO + ' failed');
                                         reject(err);
                                     });
                             })
                             .catch((err) => {
-                                console.error(
-                                    "Checking permission " +
-                                    this.androidPermissions.PERMISSION.CAMERA +
-                                    " failed"
-                                );
+                                console.error('Checking permission ' + this.androidPermissions.PERMISSION.CAMERA + ' failed');
                                 reject(err);
                             });
                     })
-                    .catch((err) => console.error("Error requesting permissions: ", err));
+                    .catch((err) => console.error('Error requesting permissions: ', err));
             });
         });
     }

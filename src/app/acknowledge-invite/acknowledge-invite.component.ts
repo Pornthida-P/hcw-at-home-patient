@@ -1,17 +1,19 @@
-import {Component, OnInit} from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
-import {InviteService} from "../services/invite.service";
-import {ConfigService} from "../services/config.service";
-import {LanguageService} from "../shared/services/language.service";
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { InviteService } from '../services/invite.service';
+import { ConfigService } from '../services/config.service';
+import { LanguageService } from '../shared/services/language.service';
 
 @Component({
-    selector: "app-acknowledge-invite",
-    templateUrl: "./acknowledge-invite.component.html",
-    styleUrls: ["./acknowledge-invite.component.scss"],
+    selector: 'app-acknowledge-invite',
+    templateUrl: './acknowledge-invite.component.html',
+    styleUrls: ['./acknowledge-invite.component.scss'],
 })
 export class AcknowledgeInviteComponent implements OnInit {
     success = false;
     error = false;
+    canceled = false;
+    inviteToken: string | null = null;
 
     constructor(
         private router: Router,
@@ -20,9 +22,8 @@ export class AcknowledgeInviteComponent implements OnInit {
         private activatedRoute: ActivatedRoute,
         private languageService: LanguageService,
     ) {
-        const inviteToken = this.activatedRoute.snapshot.paramMap.get(
-            'inviteToken',
-        ) as string;
+        const inviteToken = this.activatedRoute.snapshot.paramMap.get('inviteToken') as string;
+        this.inviteToken = inviteToken;
 
         if (inviteToken) {
             this.getAcknowledgementStatus(inviteToken);
@@ -31,42 +32,44 @@ export class AcknowledgeInviteComponent implements OnInit {
         }
     }
 
+    ngOnInit() {}
 
-    ngOnInit() {
-    }
-
-    getAcknowledgementStatus(token: string| null) {
+    getAcknowledgementStatus(token: string | null) {
         if (token) {
             this.inviteService.getAcknowledgementStatus(token).subscribe({
                 next: (res) => {
-                    if (this.configService?.config?.forcePatientLanguage && res?.patientLanguage) {
-                        this.languageService.switchLanguage(res.patientLanguage);
+                    if (res?.patientLanguage) {
+                        const force = !!this.configService?.config?.forcePatientLanguage;
+                        this.languageService.applyInviteLanguage(res.patientLanguage, token, force);
+                    }
+                    if (res?.canceled) {
+                        this.canceled = true;
+                        this.error = true;
+                        return;
                     }
                     if (res.requiresAcknowledgment) {
                         const body = {
-                            inviteToken: token
-                        }
+                            inviteToken: token,
+                        };
                         this.success = true;
                         this.inviteService.acknowledgeInvite(body).subscribe({
-                            next: () => {
-                            },
+                            next: () => {},
                             error: () => {
                                 this.error = true;
-                            }
+                            },
                         });
                     } else {
                         this.error = true;
                     }
-                }, error: (err) => {
+                },
+                error: (err) => {
                     this.error = true;
-                }
-            })
-
+                },
+            });
         }
     }
 
     testCall() {
-        this.router.navigate([`/test-call`], { queryParams: { source: 'acknowledge' } });
+        this.router.navigate([`/test-call`], { queryParams: { source: 'acknowledge', invite: this.inviteToken } });
     }
-
 }

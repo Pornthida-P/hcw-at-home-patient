@@ -14,6 +14,7 @@ export class SelectLanguageComponent implements OnInit, OnDestroy {
 
   selectedLanguage: string;
   supportedLanguages = DEFAULT_LANGUAGES;
+  languageLabels = { en: 'English', th: 'ไทย' };
 
   private langSub: Subscription;
 
@@ -23,7 +24,9 @@ export class SelectLanguageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.selectedLanguage = this.languageService.getCurrentLanguage();
+    this.selectedLanguage = DEFAULT_LANGUAGES.includes(this.translate.currentLang)
+      ? this.translate.currentLang
+      : this.languageService.getCurrentLanguage();
 
     this.langSub = this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
       this.selectedLanguage = event.lang;

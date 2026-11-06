@@ -1,46 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>@Home</title>
+    <head>
+        <meta charset="utf-8" />
+        <title>@Home</title>
 
-    <base href="/" />
+        <base href="/" />
 
-    <meta
-      name="viewport"
-      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="msapplication-tap-highlight" content="no" />
+        <meta
+            name="viewport"
+            content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta
+            name="format-detection"
+            content="telephone=no" />
+        <meta
+            name="msapplication-tap-highlight"
+            content="no" />
 
-    <link rel="icon" type="image/png" href="assets/images/favicon.ico" />
-    <!-- add to homescreen for ios -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <script type="text/javascript">
-      document.addEventListener("DOMContentLoaded", function () {
-        var warning = document.querySelector("#warning");
-        var appRoot = document.querySelector("ion-app");
-        if (!appRoot && warning) {
-          warning.style.display = "block";
-        }
-      });
-    </script>
-    <script
-    type="module"
-    src="https://unpkg.com/@ionic/pwa-elements@latest/dist/ionicpwaelements/ionicpwaelements.esm.js"
-  ></script>
-  <script
-    nomodule
-    src="https://unpkg.com/@ionic/pwa-elements@latest/dist/ionicpwaelements/ionicpwaelements.js"
-  ></script>
-  </head>
-  <body>
-    <app-root></app-root>
-    <p id="warning" style="display: none;">
-      Votre navigateur Internet ne permet malheureusement pas les
-      téléconsultations. Veuillez le mettre à jour ou bien en utiliser un autre
-      compatible, tel que Google Chrome ou Firefox.
-    </p>
-  </body>
+        <link
+            rel="icon"
+            type="image/png"
+            href="assets/images/favicon.ico" />
+        <!-- add to homescreen for ios -->
+        <meta
+            name="apple-mobile-web-app-capable"
+            content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black" />
+        <style>
+            .app-boot-loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; font-family: Roboto, Arial, sans-serif; color: #5f6368; font-size: 14px; }
+            .app-boot-loader__spinner { width: 40px; height: 40px; margin-bottom: 12px; border: 4px solid #e0e0e0; border-top-color: #3f51b5; border-radius: 50%; animation: app-boot-spin 0.8s linear infinite; }
+            @keyframes app-boot-spin { to { transform: rotate(360deg); } }
+        </style>
+        <script type="text/javascript">
+            // Only show the unsupported-browser warning when the app really failed to start,
+            // and remove it from the DOM otherwise (it used to be checked before Angular bootstrapped).
+            window.addEventListener('load', function () {
+                setTimeout(function () {
+                    var warning = document.querySelector('#warning');
+                    var appRoot = document.querySelector('ion-app');
+                    if (!warning) {
+                        return;
+                    }
+                    if (appRoot) {
+                        warning.parentNode.removeChild(warning);
+                        return;
+                    }
+                    var lang = (navigator.language || 'en').slice(0, 2).toLowerCase();
+                    if (lang === 'th') {
+                        warning.textContent =
+                            'ขออภัย เว็บเบราว์เซอร์ของคุณไม่รองรับการปรึกษาแพทย์ทางไกล โปรดอัปเดตเบราว์เซอร์หรือใช้เบราว์เซอร์อื่นที่รองรับ เช่น Google Chrome หรือ Firefox';
+                    }
+                    var bootLoader = document.querySelector('.app-boot-loader');
+                    if (bootLoader) {
+                        bootLoader.parentNode.removeChild(bootLoader);
+                    }
+                    warning.style.display = 'block';
+                }, 5000);
+            });
+        </script>
+        <script
+            async
+            type="module"
+            src="https://unpkg.com/@ionic/pwa-elements@latest/dist/ionicpwaelements/ionicpwaelements.esm.js"></script>
+        <script
+            async
+            nomodule
+            src="https://unpkg.com/@ionic/pwa-elements@latest/dist/ionicpwaelements/ionicpwaelements.js"></script>
+    </head>
+    <body>
+        <app-root>
+            <!-- Shown until Angular bootstraps and replaces the root content -->
+            <div class="app-boot-loader" role="status" aria-live="polite">
+                <div class="app-boot-loader__spinner"></div>
+                <span>Loading…</span>
+            </div>
+        </app-root>
+        <p
+            id="warning"
+            style="display: none">
+            Unfortunately your web browser does not support teleconsultations. Please update it or use another compatible browser, such as
+            Google Chrome or Firefox.
+        </p>
+    </body>
 </html>

@@ -11,6 +11,7 @@ import {FooterComponent} from "./components/footer/footer.component";
 import {MarkdownModule} from "ngx-markdown";
 import {DurationPipe} from "./pipes/duration.pipe";
 import {LinkifyPipe} from "./pipes/linkify.pipe";
+import {LocalDatePipe} from "./pipes/local-date.pipe";
 import {TranslateModule} from "@ngx-translate/core";
 import {WhatsappBrowserBannerComponent} from "./components/whatsapp-browser-banner/whatsapp-browser-banner.component";
 
@@ -19,6 +20,7 @@ import {WhatsappBrowserBannerComponent} from "./components/whatsapp-browser-bann
     declarations: [
         DurationPipe,
         LinkifyPipe,
+        LocalDatePipe,
         FooterComponent,
         HeaderComponent,
         FileDropDirective,
@@ -37,6 +39,7 @@ import {WhatsappBrowserBannerComponent} from "./components/whatsapp-browser-bann
     exports: [
         DurationPipe,
         LinkifyPipe,
+        LocalDatePipe,
         FooterComponent,
         HeaderComponent,
         FileDropDirective,

@@ -1,37 +1,16 @@
-# HCW@Home — Patient Frontend
+This folder contain HCW@patient frontend source code. It must be build and serve by a web server like Nginx.
+Static files are stored into dist folder.
 
-This folder contains the **HCW@Home patient** frontend source code (Angular/Ionic). The app must be **built** and **served** by a web server such as Nginx. Built static files are output to the `dist` folder.
+### How to build
 
-## Prerequisites
-
-- Node.js (v18+ recommended)
-
-## How to build
-
-```bash
-# Install dependencies
-npm install
-
-# Build for production
-npm run build
+```
+npm install -g yarn
+yarn
+yarn run build
 ```
 
-Output will be in the `dist` directory.
+### How to deploy
 
-## Development
+Please read
 
-To run locally during development:
-
-```bash
-npm start
-# or
-npm run ionic:serve
-```
-
-Then open **http://localhost:4201/**.
-
-## How to deploy
-
-See the deployment guide:
-
-**https://docs.hcw-at-home.com/deploy/**
+https://docs.hcw-at-home.com/deploy/

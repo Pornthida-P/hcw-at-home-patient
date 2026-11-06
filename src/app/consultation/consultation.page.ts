@@ -1,35 +1,36 @@
-import {NativeAudio} from "@capacitor-community/native-audio";
-import {Component, ViewChild, OnInit, NgZone, AfterViewInit, HostListener} from "@angular/core";
-import {AlertController, IonContent, Platform, ToastController} from "@ionic/angular";
-import {ConsultationService} from "../services/consultation.service";
-import {Router, ActivatedRoute} from "@angular/router";
-import {MessageService} from "../services/message.service";
-import {AuthService} from "../auth/auth.service";
-import {SocketEventsService} from "../services/socket-events.service";
-import {CallService} from "../services/call.service";
-import {ModalController} from "@ionic/angular";
-import {CloseConsultationComponent} from "../shared/components/close-consultation/close-consultation.component";
-import {ChooseAttachmentComponent} from "../shared/components/choose-attachment/choose-attachment.component";
-import {Subscription} from "rxjs";
-import {first} from "rxjs/operators";
-import {File, FileEntry} from "@awesome-cordova-plugins/file/ngx";
-import {Media, MediaObject} from "@awesome-cordova-plugins/media/ngx";
-import {GlobalVariableService} from "../services/global-variable.service";
-import {TranslateService} from "@ngx-translate/core";
-import {IonModal} from "@ionic/angular";
-import {DomSanitizer} from "@angular/platform-browser";
-import {ErrorModalComponent} from "../shared/components/error-modal/error-modal.component";
-import {LanguageService} from "../shared/services/language.service";
-import {ConfigService} from "../services/config.service";
+import { NativeAudio } from '@capacitor-community/native-audio';
+import { Component, ViewChild, OnInit, NgZone, AfterViewInit, HostListener } from '@angular/core';
+import { AlertController, IonContent, Platform, ToastController } from '@ionic/angular';
+import { ConsultationService } from '../services/consultation.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MessageService } from '../services/message.service';
+import { AuthService } from '../auth/auth.service';
+import { SocketEventsService } from '../services/socket-events.service';
+import { CallService } from '../services/call.service';
+import { ModalController } from '@ionic/angular';
+import { CloseConsultationComponent } from '../shared/components/close-consultation/close-consultation.component';
+import { ChooseAttachmentComponent } from '../shared/components/choose-attachment/choose-attachment.component';
+import { Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
+import { File, FileEntry } from '@awesome-cordova-plugins/file/ngx';
+import { Media, MediaObject } from '@awesome-cordova-plugins/media/ngx';
+import { GlobalVariableService } from '../services/global-variable.service';
+import { TranslateService } from '@ngx-translate/core';
+import { IonModal } from '@ionic/angular';
+import { DomSanitizer } from '@angular/platform-browser';
+import { ErrorModalComponent } from '../shared/components/error-modal/error-modal.component';
+import { LanguageService } from '../shared/services/language.service';
+import { ConfigService } from '../services/config.service';
+import { safeRemoveItem } from '../services/safe-storage';
 
 @Component({
-    selector: "app-consultation",
-    templateUrl: "./consultation.page.html",
-    styleUrls: ["./consultation.page.scss"],
+    selector: 'app-consultation',
+    templateUrl: './consultation.page.html',
+    styleUrls: ['./consultation.page.scss'],
 })
-export class ConsultationPage implements OnInit,  AfterViewInit {
+export class ConsultationPage implements OnInit, AfterViewInit {
     @ViewChild(IonContent) contentArea: IonContent;
-    @ViewChild("txtArea") textArea;
+    @ViewChild('txtArea') textArea;
     @ViewChild(IonModal) modal: IonModal;
 
     currentUser;
@@ -43,6 +44,9 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
     isRecording = false;
     isFullScreen: boolean;
     contentScrollTop;
+    // Paging state for older messages (avoid refetching on every scroll event)
+    allMessagesLoaded = false;
+    private lastScrollFetch = 0;
     isUploading = false;
     shouldJoinCall = false;
     ongoingCall = null;
@@ -54,7 +58,8 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
     imgModalSrc = null;
     imgModalAlt = null;
     imgModalName = null;
-
+    imgModalRawUrl: string = null;
+    imgModalFileName: string = null;
 
     private subscriptions: Array<Subscription> = [];
     private consultationSubscription: Subscription;
@@ -80,8 +85,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         private languageService: LanguageService,
         private _sanitizer: DomSanitizer,
         private toastController: ToastController,
-    ) {
-    }
+    ) {}
 
     ngOnInit() {
         this.currentUser = this.authService.currentUserValue;
@@ -92,7 +96,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         this.listenToNewMessages();
     }
 
-    @HostListener("document:ionBackButton", ["$event"])
+    @HostListener('document:ionBackButton', ['$event'])
     overrideHardwareBackAction(event: any) {
         event.stopImmediatePropagation();
         event.stopPropagation();
@@ -118,14 +122,14 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
 
                     if (msg.data.from !== this.currentUser.id && (msg.data.type === 'text' || msg.data.type === 'attachment')) {
                         const audio = new Audio('assets/sounds/new-message.mp3');
-                        audio.play().catch(err => console.log('Audio play failed:', err));
+                        audio.play().catch((err) => console.log('Audio play failed:', err));
                     }
                 });
 
                 this.scrollToBottom();
 
                 this.readMessages();
-            })
+            }),
         );
         this.subscriptions.push(
             this._socketEventsService.onConsultationAccepted().subscribe((event) => {
@@ -134,30 +138,26 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                         this.getConsultation();
                     });
                 }
-            })
+            }),
         );
     }
 
     listenToCallEvents() {
         this.subscriptions.push(
             this._socketEventsService.onRejectCall().subscribe((event) => {
-                const message = this.chatMessages.find(
-                    (msg) => msg.id === event.data.message.id
-                );
+                const message = this.chatMessages.find((msg) => msg.id === event.data.message.id);
                 if (message) {
                     message.closedAt = new Date();
                 }
-            })
+            }),
         );
         this.subscriptions.push(
             this._socketEventsService.onAcceptCall().subscribe((event) => {
-                const message = this.chatMessages.find(
-                    (msg) => msg.id === event.data.message.id
-                );
+                const message = this.chatMessages.find((msg) => msg.id === event.data.message.id);
                 if (message) {
                     message.acceptedAt = new Date();
                 }
-            })
+            }),
         );
         this.subscriptions.push(
             this._socketEventsService.onCall().subscribe((e) => {
@@ -170,18 +170,18 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                     this.callingDoctor = e.data.user;
                     this.shouldJoinCall = false;
                 });
-            })
+            }),
         );
         this.subscriptions.push(
             this._socketEventsService.onEndCall().subscribe((e) => {
-                NativeAudio.stop({assetId: "ringSound"}).catch(() => {});
+                NativeAudio.stop({ assetId: 'ringSound' }).catch(() => {});
                 this.zone.run(() => {
                     this.callRunning = false;
                     this.ongoingCall = null;
                     this.shouldJoinCall = false;
                     this.callingDoctor = null;
                 });
-            })
+            }),
         );
     }
 
@@ -196,40 +196,35 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
 
         this.chatText = this.chatText.trim();
         this.chatMessages.push({
-            direction: "outgoing",
+            direction: 'outgoing',
             text: this.chatText,
             type: 'text',
             createdAt: Date.now(),
             fromUserDetail: {
                 role: this.currentUser.role,
-                firstName: this.currentUser.role === "patient" ? this.consultation?.consultation?.firstName : this.currentUser?.firstName,
-                lastName: this.currentUser.role === "patient" ? this.consultation?.consultation?.lastName : this.currentUser?.lastName
-            }
+                firstName: this.currentUser.role === 'patient' ? this.consultation?.consultation?.firstName : this.currentUser?.firstName,
+                lastName: this.currentUser.role === 'patient' ? this.consultation?.consultation?.lastName : this.currentUser?.lastName,
+            },
         });
         this.scrollToBottom(200);
 
         this.subscriptions.push(
-            this.msgServ
-                .sendMessage(
-                    this.consultation.id || this.consultation._id,
-                    this.chatText
-                )
-                .subscribe(
-                    (r) => {
-                        console.log("mesag send ", r);
-                    },
-                    (err) => {
-                        if (err.error && err.error.message == "closed") {
-                            this.closeConsultation(this.consultation);
-                        }
+            this.msgServ.sendMessage(this.consultation.id || this.consultation._id, this.chatText).subscribe(
+                (r) => {
+                    console.log('mesag send ', r);
+                },
+                (err) => {
+                    if (err.error && err.error.message == 'closed') {
+                        this.closeConsultation(this.consultation);
                     }
-                )
+                },
+            ),
         );
-        this.chatText = "";
+        this.chatText = '';
     }
 
     ngAfterViewInit() {
-        if (this.currentUser && this.currentUser.role !== "translator") {
+        if (this.currentUser && this.currentUser.role !== 'translator') {
             this.readMessages();
         }
 
@@ -239,66 +234,61 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                 if (!this.isFullScreen) {
                     this.readMessages();
                 }
-            })
+            }),
         );
     }
 
     getConsultation() {
-        this.consultationSubscription = this.conServ
-            .getConsultation(this.consultationId)
-            .subscribe(async (consultation) => {
-                if (!consultation || !consultation.consultation) {
-                    if (this.consultationSubscription) {
-                        this.consultationSubscription.unsubscribe();
-                        this.consultationSubscription = null;
-                    }
-                    localStorage.removeItem("currentConsultation");
-                    this._socketEventsService.disconnect();
-                    return this.authService.logOutNurse();
-                    // return this.router.navigate(['login']);
+        this.consultationSubscription = this.conServ.getConsultation(this.consultationId).subscribe(async (consultation) => {
+            if (!consultation || !consultation.consultation) {
+                if (this.consultationSubscription) {
+                    this.consultationSubscription.unsubscribe();
+                    this.consultationSubscription = null;
                 }
-                if (
-                    !consultation.consultation ||
-                    consultation.consultation.status === "closed"
-                ) {
-                    if (this.currentUser.role !== "nurse") {
+                safeRemoveItem('currentConsultation');
+                this._socketEventsService.disconnect();
+                return this.authService.logOutNurse();
+                // return this.router.navigate(['login']);
+            }
+            if (!consultation.consultation || consultation.consultation.status === 'closed') {
+                if (this.currentUser.role !== 'nurse') {
+                    this.closeConsultation(consultation);
+                }
+            }
+
+            this.subscriptions.push(
+                this.callService.getCurrentCall(this.consultationId).subscribe(
+                    (call) => {
+                        this.ongoingCall = call;
+                        if (this.ongoingCall && !this.callRunning) {
+                            this.showJoinModal();
+                        }
+                        this.shouldJoinCall = false;
+                    },
+                    (err) => {
+                        console.log('error getting current call ', err);
+                    },
+                ),
+            );
+
+            this.subscriptions.push(
+                this._socketEventsService.onConsultationClosed().subscribe((e) => {
+                    if (e.data._id === this.consultationId) {
                         this.closeConsultation(consultation);
                     }
+                }),
+            );
+            this.zone.run(() => {
+                if (!this.consultation) {
+                    this.consultation = consultation;
+
+                    this.getMessages();
+                } else {
+                    this.consultation = consultation;
                 }
-
-                this.subscriptions.push(
-                    this.callService.getCurrentCall(this.consultationId).subscribe(
-                        (call) => {
-                            this.ongoingCall = call;
-                            if (this.ongoingCall && !this.callRunning) {
-                                this.showJoinModal();
-                            }
-                            this.shouldJoinCall = false;
-                        },
-                        (err) => {
-                            console.log("error getting current call ", err);
-                        }
-                    )
-                );
-
-                this.subscriptions.push(
-                    this._socketEventsService.onConsultationClosed().subscribe((e) => {
-                        if (e.data._id === this.consultationId) {
-                            this.closeConsultation(consultation);
-                        }
-                    })
-                );
-                this.zone.run(() => {
-                    if (!this.consultation) {
-                        this.consultation = consultation;
-
-                        this.getMessages();
-                    } else {
-                        this.consultation = consultation;
-                    }
-                    this.scrollToBottom();
-                });
+                this.scrollToBottom();
             });
+        });
     }
 
     closeConsultation(consultation) {
@@ -306,19 +296,13 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
             this.consultationSubscription.unsubscribe();
             this.consultationSubscription = null;
         }
-        localStorage.removeItem("currentConsultation");
-        localStorage.removeItem("inviteToken");
+        safeRemoveItem('currentConsultation');
+        safeRemoveItem('inviteToken');
         this._socketEventsService.disconnect();
-        if (
-            this.currentUser.role === "guest" ||
-            this.currentUser.role === "translator"
-        ) {
+        if (this.currentUser.role === 'guest' || this.currentUser.role === 'translator') {
             this.authService.logOutNurse();
         }
-        return this.router.navigate([
-            "closing-screen",
-            consultation.consultation._id || consultation.consultation.id,
-        ]);
+        return this.router.navigate(['closing-screen', consultation.consultation._id || consultation.consultation.id]);
     }
 
     onTextareaFocus() {
@@ -337,17 +321,19 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         }
 
         const lastMsg = this.chatMessages[this.chatMessages.length - 1];
-        if (
-            this.isFullScreen &&
-            lastMsg &&
-            (lastMsg.type !== "videoCall" || lastMsg.type !== "audioCall")
-        ) {
+        if (this.isFullScreen && lastMsg && (lastMsg.type !== 'videoCall' || lastMsg.type !== 'audioCall')) {
             return;
         }
         this.consultationService.readMessages(this.consultationId);
     }
 
     onKeyDown(event: KeyboardEvent) {
+        // Enter pressed while an IME composition is active (Thai/Asian
+        // keyboards, mobile predictive text) must only commit the composition;
+        // sending at that moment sent a partial/garbled text.
+        if (event.isComposing || event.keyCode === 229) {
+            return;
+        }
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             this.send();
@@ -365,11 +351,10 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
     async showCancelModal() {
         const modal = await this.modalController.create({
             component: CloseConsultationComponent,
-            componentProps: {consultationId: this.consultationId},
+            componentProps: { consultationId: this.consultationId },
         });
         return await modal.present();
     }
-
 
     async showJoinModal() {
         const alert = await this.alertController.create({
@@ -384,31 +369,31 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                     text: this.translate.instant('consultation.joinCallSubmit'),
                     handler: () => {
                         this.joinCall();
-                    }
-                }
-            ]
+                    },
+                },
+            ],
         });
 
         await alert.present();
-
     }
 
     async showAttachmentModal() {
         const modal = await this.modalController.create({
             component: ChooseAttachmentComponent,
-            componentProps: {consultationId: this.consultationId},
+            componentProps: { consultationId: this.consultationId },
         });
         await modal.present();
-        const {data} = await modal.onDidDismiss();
+        const { data } = await modal.onDidDismiss();
 
-        if (data.filePath) {
-            if (typeof data.filePath === "object") {
-                this.uploadBlob(data.filePath, data.filePath.name);
+        // Modal closed by backdrop / back button -> data is undefined
+        if (data && data.filePath) {
+            if (typeof data.filePath === 'object') {
+                this.uploadBlob(data.filePath, data.filePath.name || data.fileName);
 
                 // this.uploadBlob(data.filePath, data.filePath.name);
             } else if (data.filePath.length > 100000) {
-                const blob = this.b64toBlob(data.filePath, "image/jpeg");
-                this.uploadBlob(blob, "image.jpg");
+                const blob = this.b64toBlob(data.filePath, 'image/jpeg');
+                this.uploadBlob(blob, data.fileName || 'image.jpg');
             } else {
                 this.upload(data.filePath);
             }
@@ -416,7 +401,6 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
     }
 
     upload(filePath) {
-
         this.isUploading = true;
         this.file
             .resolveLocalFilesystemUrl(filePath)
@@ -429,10 +413,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                             const reader = new FileReader();
                             const self = this;
                             reader.onloadend = function () {
-                                const blob = new Blob(
-                                    [new Uint8Array(<ArrayBuffer>this.result)],
-                                    {type: mimeType}
-                                );
+                                const blob = new Blob([new Uint8Array(<ArrayBuffer>this.result)], { type: mimeType });
                                 self.uploadBlob(blob, fileEntry.name);
                             };
 
@@ -440,23 +421,22 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                         },
                         (error) => {
                             // no mime type found;
-                            alert("Error with file type");
-                        }
+                            alert('Error with file type');
+                        },
                     );
                 }
             })
             .catch(async (err) => {
-                const message =  err.error?.message || err.error ||  err.message || err.statusText || err;
+                const message = err.error?.message || err.error || err.message || err.statusText || err;
                 this.isUploading = false;
-                await this.presentErrorModal(message)
+                await this.presentErrorModal(message);
             });
     }
 
     uploadBlob(blob, name) {
         this.isUploading = true;
-        this.consultationService
-            .postFile(blob, name, this.consultation.id || this.consultation.id)
-            .subscribe((data) => {
+        this.consultationService.postFile(blob, name, this.consultation.id || this.consultation.id).subscribe(
+            (data) => {
                 const msg = data.message;
 
                 this.zone.run(() => {
@@ -464,11 +444,13 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                     this.scrollToBottom();
                     this.isUploading = false;
                 });
-            }, async (err) => {
-                const message =  err.error?.message || err.error ||  err.message || err.statusText || err;
+            },
+            async (err) => {
+                const message = err.error?.message || err.error || err.message || err.statusText || err;
                 this.isUploading = false;
-                await this.presentErrorModal(message)
-            });
+                await this.presentErrorModal(message);
+            },
+        );
     }
 
     // ngOnDestroy(): void {
@@ -484,49 +466,36 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
 
     startRecording() {
         this.isRecording = true;
-        const filePath = this.file.externalDataDirectory + Date.now() + ".mp3";
+        const filePath = this.file.externalDataDirectory + Date.now() + '.mp3';
         this.audioFile = this.media.create(filePath);
 
         this.subscriptions.push(
             this.audioFile.onSuccess.subscribe((amp) => {
                 this.upload(filePath);
-
-            })
+            }),
         );
         this.subscriptions.push(
             this.audioFile.onError.subscribe((e) => {
-                console.log("Error ", e);
-            })
+                console.log('Error ', e);
+            }),
         );
-        this.subscriptions.push(
-            this.audioFile.onStatusUpdate.subscribe((status) => console.log(status))
-        );
+        this.subscriptions.push(this.audioFile.onStatusUpdate.subscribe((status) => console.log(status)));
 
         this.audioFile.startRecord();
     }
 
     adjustMsg(msg) {
-        if (msg.type === "attachment") {
+        if (msg.type === 'attachment') {
             const requestUrl =
                 this.globalVariableService.getApiPath() +
-                `/consultation/${
-                    this.consultation._id || this.consultation.id
-                }/attachment/${msg.id}`;
+                `/consultation/${this.consultation._id || this.consultation.id}/attachment/${msg.id}`;
             const user = this.authService.currentUserValue;
 
-            if (msg.mimeType.endsWith("jpeg") || msg.mimeType.endsWith("png")) {
-                fetch(requestUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${user.token}`,
-                    }
-                }).then(res=> {
-                    return res.blob()
-                }).then(imageFile=>{
-                    msg.isImage = true
-                    msg.attachmentsURL = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(imageFile));
-                })
+            if (msg.mimeType.endsWith('jpeg') || msg.mimeType.endsWith('png')) {
+                msg.imageRequestUrl = requestUrl;
+                this.loadImage(msg, user?.token);
                 msg.isImage = true;
-            } else if (msg.mimeType.startsWith("audio")) {
+            } else if (msg.mimeType.startsWith('audio')) {
                 msg.isAudio = true;
             } else {
                 msg.attachmentsURL = requestUrl;
@@ -535,32 +504,32 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         }
 
         if (msg.from === this.currentUser.id) {
-            msg.direction = "outgoing";
+            msg.direction = 'outgoing';
         } else {
-            msg.direction = "incoming";
+            msg.direction = 'incoming';
         }
         return msg;
     }
 
     getMessages(noScroll?) {
-        if (this.currentUser.role === "translator") {
+        if (this.currentUser.role === 'translator') {
+            return;
+        }
+        if (!this.consultation) {
             return;
         }
         this.loadingMsgs = true;
 
-        if (!this.consultation) {
-            return;
-        }
-
         this.msgServ
-            .getConsultationMessages(
-                this.consultation._id || this.consultation.id,
-                this.chatMessages.length
-            )
+            .getConsultationMessages(this.consultation._id || this.consultation.id, this.chatMessages.length)
             .pipe(first())
             .subscribe((msgs) => {
                 this.zone.run(() => {
-                    this.chatMessages = msgs
+                    // The API pages by 20; a shorter page means there is nothing older
+                    if (!msgs || msgs.length < 20) {
+                        this.allMessagesLoaded = true;
+                    }
+                    this.chatMessages = (msgs || [])
                         .map((m) => {
                             return this.adjustMsg(m);
                         })
@@ -572,14 +541,26 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                         this.scrollToBottom(100);
                     }
                 });
+            }, () => {
+                this.loadingMsgs = false;
             });
     }
 
     public handleScroll(event) {
         this.contentScrollTop = event.detail.scrollTop;
-        if (event.detail.scrollTop < 400 && !this.loadingMsgs) {
-            this.getMessages(true);
+        // ionScroll fires many times per second (also when the keyboard
+        // opens / scrollToBottom runs). Previously every event near the top sent
+        // a new GET /message request even when everything was already loaded,
+        // which caused re-rendering of the chat list and input lag while typing.
+        if (event.detail.scrollTop >= 400 || this.loadingMsgs || this.allMessagesLoaded) {
+            return;
         }
+        const now = Date.now();
+        if (now - this.lastScrollFetch < 1000) {
+            return;
+        }
+        this.lastScrollFetch = now;
+        this.getMessages(true);
     }
 
     async stopRecording() {
@@ -604,7 +585,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
 
     hangup() {
         this.zone.run(() => {
-            NativeAudio.stop({assetId: "ringSound"});
+            NativeAudio.stop({ assetId: 'ringSound' });
             this.callRunning = false;
             this.shouldJoinCall = false;
             this.callingDoctor = null;
@@ -631,11 +612,11 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
                         duration: 4000,
                         position: 'bottom',
                         color: 'danger',
-                        buttons: [{ icon: 'close', role: 'cancel' }]
+                        buttons: [{ icon: 'close', role: 'cancel' }],
                     });
                     await toast.present();
-                }
-            )
+                },
+            ),
         );
     }
 
@@ -643,20 +624,19 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         this.platform
             .ready()
             .then(() => {
-                NativeAudio.play({assetId: "ringSound", time: 0});
-                return NativeAudio.loop({assetId: "ringSound"});
+                NativeAudio.play({ assetId: 'ringSound', time: 0 });
+                return NativeAudio.loop({ assetId: 'ringSound' });
             })
             .then(
-                (res) => {
-                },
+                (res) => {},
                 (err) => {
-                    console.log("error ", err);
-                }
+                    console.log('error ', err);
+                },
             );
     }
 
     downloadPdf(pdfUrl: string, fileName: string): void {
-        this.consultationService.downloadPdf(pdfUrl).subscribe(blob => {
+        this.consultationService.downloadPdf(pdfUrl).subscribe((blob) => {
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             link.download = fileName || 'attachment.pdf';
@@ -667,11 +647,57 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         });
     }
 
-    openImgModal(img) {
+    loadImage(msg, token: string, attempt = 0) {
+        msg.imageLoading = true;
+        msg.imageError = false;
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timeoutId = setTimeout(() => {
+            if (controller) {
+                controller.abort();
+            }
+        }, 45000);
+        fetch(msg.imageRequestUrl, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            signal: controller ? controller.signal : undefined,
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return res.blob();
+            })
+            .then((imageFile) => {
+                clearTimeout(timeoutId);
+                msg.isImage = true;
+                msg.imageLoading = false;
+                msg.attachmentsURL = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(imageFile));
+            })
+            .catch((err) => {
+                clearTimeout(timeoutId);
+                if (attempt < 1) {
+                    setTimeout(() => this.loadImage(msg, token, attempt + 1), 1500);
+                    return;
+                }
+                console.error('Error loading chat image', err);
+                msg.imageLoading = false;
+                msg.imageError = true;
+            });
+    }
 
-        this.imgModalSrc = this._sanitizer.bypassSecurityTrustResourceUrl(img.target.currentSrc);
-        this.imgModalAlt = img.target.alt;
-        this.imgModalName = "Image";
+    retryImage(msg) {
+        const user = this.authService.currentUserValue;
+        this.loadImage(msg, user?.token);
+    }
+
+    openImgModal(event, msg?) {
+        const rawUrl = event.target.currentSrc;
+        this.imgModalRawUrl = rawUrl;
+        this.imgModalFileName = msg?.fileName || 'image';
+        this.imgModalSrc = this._sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
+        this.imgModalAlt = event.target.alt;
+        this.imgModalName = msg?.fileName || this.translate.instant('consultation.image');
         this.isImgModalOpen = true;
     }
 
@@ -679,24 +705,53 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
         this.isImgModalOpen = isOpen;
     }
 
-    backToDashboard() {
-        localStorage.removeItem("currentConsultation");
-        this.router.navigate([`/dashboard`]);
+    async downloadImage(): Promise<void> {
+        if (!this.imgModalRawUrl) {
+            return;
+        }
+        try {
+            const response = await fetch(this.imgModalRawUrl);
+            const blob = await response.blob();
+            const fileName = this.imgModalFileName || 'image';
+
+            const objectUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = fileName;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
+        } catch (err) {
+            console.error('Error downloading image', err);
+            const toast = await this.toastController.create({
+                message: this.translate.instant('consultation.downloadFailed'),
+                duration: 3000,
+                position: 'bottom',
+                color: 'danger',
+            });
+            await toast.present();
+        }
     }
 
+    backToDashboard() {
+        safeRemoveItem('currentConsultation');
+        this.router.navigate([`/dashboard`]);
+    }
 
     hideKeyboard() {
         // this set timeout needed for case when hideKeyborad
         // is called inside of 'onfocus' event handler
         setTimeout(function () {
             // creating temp field
-            const field = document.createElement("input");
-            field.setAttribute("type", "text");
+            const field = document.createElement('input');
+            field.setAttribute('type', 'text');
             // hiding temp field from peoples eyes
             // -webkit-user-modify is nessesary for Android 4.x
             field.setAttribute(
-                "style",
-                "position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;"
+                'style',
+                'position:absolute; top: 0px; opacity: 0; -webkit-user-modify: read-write-plaintext-only; left:0px;',
             );
             document.body.appendChild(field);
 
@@ -704,7 +759,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
             field.onfocus = function () {
                 // this timeout of 200ms is nessasary for Android 2.3.x
                 setTimeout(function () {
-                    field.setAttribute("style", "display:none;");
+                    field.setAttribute('style', 'display:none;');
                     setTimeout(function () {
                         document.body.removeChild(field);
                         document.body.focus();
@@ -726,7 +781,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
      * @return Blob
      */
     b64toBlob(b64Data, contentType, sliceSize?) {
-        contentType = contentType || "";
+        contentType = contentType || '';
         sliceSize = sliceSize || 512;
 
         var byteCharacters = atob(b64Data);
@@ -745,7 +800,7 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
             byteArrays.push(byteArray);
         }
 
-        var blob = new Blob(byteArrays, {type: contentType});
+        var blob = new Blob(byteArrays, { type: contentType });
 
         return blob;
     }
@@ -755,10 +810,9 @@ export class ConsultationPage implements OnInit,  AfterViewInit {
             component: ErrorModalComponent,
             cssClass: 'error-modal',
             componentProps: {
-                message
-            }
+                message,
+            },
         });
         return await modal.present();
     }
-
 }

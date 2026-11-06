@@ -54,7 +54,7 @@
                                 <td class="stacked-cell">
                                     <div class="date-container">
                                     <span class='date'
-                                          *ngIf="consultation?.lastMsg?.createdAt">{{ consultation?.lastMsg?.createdAt  | date: 'dd/MM/YYYY HH:mm' }}</span>
+                                          *ngIf="consultation?.lastMsg?.createdAt">{{ consultation?.lastMsg?.createdAt  | localDate: 'dd/MM/yyyy HH:mm' }}</span>
                                         <ion-badge class="rounded-badge">{{ consultation.unreadCount }}</ion-badge>
                                     </div>
                                 </td>
@@ -72,7 +72,7 @@
                                             <ng-template #requesting>
                                                 <span class="value">{{ 'dashboard.requesting' | translate }}</span>
                                             </ng-template>
-                                            <span class="value">{{ consultation?.consultation?.createdAt  | date: 'dd/MM/YYYY HH:mm' }}</span>
+                                            <span class="value">{{ consultation?.consultation?.createdAt  | localDate: 'dd/MM/yyyy HH:mm' }}</span>
                                             <span class="value">{{ consultation?.queue?.name }}</span>
                                         </div>
                                     </div>
@@ -162,7 +162,7 @@
                                             <ng-template #canceled>
                                                 <span class="value">{{ 'dashboard.canceled' | translate }}</span>
                                             </ng-template>
-                                            <span class="value">{{ consultation.consultation?.createdAt  | date: 'dd/MM/YYYY HH:mm' }}</span>
+                                            <span class="value">{{ consultation.consultation?.createdAt  | localDate: 'dd/MM/yyyy HH:mm' }}</span>
                                             <span class="value">{{ consultation.queue?.name }}</span>
                                         </div>
                                     </div>
@@ -175,7 +175,7 @@
                                         </div>
 
                                         <div class="flex-item ion-align-items-start">
-                                            <span class="value">{{ consultation.consultation?.closedAt  | date: 'dd/MM/YYYY HH:mm' }}</span>
+                                            <span class="value">{{ consultation.consultation?.closedAt  | localDate: 'dd/MM/yyyy HH:mm' }}</span>
                                             <span class="value">{{ 'dashboard.' +  consultation.consultation?.gender | translate}}</span>
                                         </div>
                                     </div>

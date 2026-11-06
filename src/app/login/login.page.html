@@ -1,6 +1,16 @@
 <ion-content>
     <div class="center">
         <div
+            *ngIf="!configService.config"
+            class="custom-card">
+            <div class="right-side">
+                <div class="container config-loading">
+                    <ion-spinner name="crescent"></ion-spinner>
+                    <p class="config-loading-text">Config not loaded</p>
+                </div>
+            </div>
+        </div>
+        <div
             *ngIf="configService.config"
             class="custom-card">
             <div class="left-side">
@@ -28,7 +38,7 @@
                     <div class="title">
                         <img
                             class="logo"
-                            *ngIf="configService.config.logo"
+                            *ngIf="configService.config?.logo"
                             [src]="configService.config.logo"
                             [alt]="configService.config.branding"
                             onerror="this.style.opacity = '0'" />
@@ -73,7 +83,7 @@
                                     <ion-card-title class="token-error-title">{{ 'login.anErrorHasOccurred' | translate }} </ion-card-title>
                                 </ion-card-header>
                                 <ion-card-content class="token-error-content">
-                                    {{ 'login.theInvitationIsNotOrNoLongerValide' | translate }}
+                                    {{ (inviteCanceled ? 'login.invitationCanceled' : 'login.theInvitationIsNotOrNoLongerValide') | translate }}
                                 </ion-card-content>
                             </ion-card>
 
@@ -162,8 +172,8 @@
                                     [class.submitted]="submitted">
                                     <ng-container *ngIf="!submitted">{{ 'login.joinTheConsultation' | translate }} </ng-container>
                                     <img
-                                        src="/assets/images/three-dots-spinner.svg"
-                                        alt="Chargement en cours" />
+                                        src="assets/images/three-dots-spinner.svg"
+                                        [attr.alt]="('common.loading' | translate)" />
                                 </button>
                             </div>
                             <p *ngIf="submitted">{{ 'login.pleaseWaitWhileYourRequest' | translate }}</p>
@@ -172,8 +182,7 @@
 
                     <ng-container *ngIf="isScheduled">
                         <h2 class="title">
-                            {{ 'login.yourConsultationIsPlannedFor' | translate }} {{ (scheduledFor) | date: "medium":null:
-                            invite.patientLanguage }}.
+                            {{ 'login.yourConsultationIsPlannedFor' | translate }} {{ (scheduledFor) | localDate: "medium" }}.
                         </h2>
                         <p class="ics">
                             <a
